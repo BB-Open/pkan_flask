@@ -16,22 +16,44 @@ sj.dumps = partial(sj.dumps, ignore_nan=True)
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+
 # DATA OBJECTS
 
-@socketio.on('request_number')
-def request_profile_icons(data=None):
-    logger.info('request_number')
+@socketio.on('request_vocab')
+def request_vocab(data=None):
+    # todo: category, ordering, ...
+    logger.info('request_vocab')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    cm_data = {}
-    cm_data['number'] = randint(0, 100)
-    cm_data['transaction_id'] = transaction_id
-    logger.info('request_cm_profile_icons finished')
-    emit(namespace, sj.dumps(cm_data))
-
-
-
-
-
-
+    logger.info(params)
+    data = {}
+    data['vocab'] = ['Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5', 'Value 6']
+    data['transaction_id'] = transaction_id
+    logger.info('request_vocab finished')
+    emit(namespace, sj.dumps(data))
+    
+@socketio.on('request_search_results')
+def request_search_results(data=None):
+    # todo: ...
+    logger.info('request_search_results')
+    params = data['params']
+    namespace = data['namespace']
+    transaction_id = data['transaction_id']
+    logger.info(params)
+    data = {}
+    data['results'] = [
+        {
+            'id': 'my-id',
+            'title': 'my-title',
+            'description': 'my-description'
+        },
+        {
+            'id': 'my-id2',
+            'title': 'my-title2',
+            'description': 'my-description2'
+        }
+    ]
+    data['transaction_id'] = transaction_id
+    logger.info('request_search_results finished')
+    emit(namespace, sj.dumps(data))
