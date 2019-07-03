@@ -57,3 +57,56 @@ def request_search_results(data=None):
     data['transaction_id'] = transaction_id
     logger.info('request_search_results finished')
     emit(namespace, sj.dumps(data))
+
+@socketio.on('request_items_detail')
+def request_items_detail(data=None):
+    # todo: ...
+    logger.info('request_items_detail')
+    params = data['params']
+    namespace = data['namespace']
+    transaction_id = data['transaction_id']
+    logger.info(params)
+    data = {}
+    data['title'] = 'Ich bin der Titel'
+    data['description'] = 'Ich bin die Beschreibung'
+    data['fields'] = [
+        {
+            'field': 'Data',
+            'type': 'url',
+            'value': 'my-description',
+            'title': 'My Description'
+        },
+        {
+            'field': 'ein Feld',
+            'type': 'text',
+            'value': 'Ich bin ein Text'
+        }
+    ]
+    data['transaction_id'] = transaction_id
+    logger.info('request_items_detail finished')
+    emit(namespace, sj.dumps(data))
+    
+@socketio.on('request_related_items')
+def request_related_items(data=None):
+    # todo: ...
+    logger.info('request_related_items')
+    params = data['params']
+    namespace = data['namespace']
+    transaction_id = data['transaction_id']
+    logger.info(params)
+    data = {}
+    data['results'] = [
+        {
+            'id': 'my-id',
+            'title': 'my-title',
+            'description': 'my-description'
+        },
+        {
+            'id': 'my-id2',
+            'title': 'my-title2',
+            'description': 'my-description2'
+        }
+    ]
+    data['transaction_id'] = transaction_id
+    logger.info('request_related_items finished')
+    emit(namespace, sj.dumps(data))
