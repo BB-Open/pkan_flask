@@ -80,6 +80,11 @@ def request_items_detail(data=None):
             'field': 'ein Feld',
             'type': 'text',
             'value': 'Ich bin ein Text'
+        },
+        {
+            'field': 'ID',
+            'type': 'text',
+            'value': params['id']
         }
     ]
     data['transaction_id'] = transaction_id
