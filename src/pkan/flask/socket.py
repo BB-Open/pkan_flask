@@ -28,11 +28,30 @@ def request_vocab(data=None):
     transaction_id = data['transaction_id']
     logger.info(params)
     data = {}
-    data['vocab'] = ['Value 1', 'Value 2', 'Value 3', 'Value 4', 'Value 5', 'Value 6']
+    # icon can be None
+    if params['vocab'] == 'category':
+        data['vocab'] = [
+            {'text': 'Value 1',
+             'icon': 'Value 2',},
+            {'text': 'Value 3',
+             'icon': 'Value 4'},
+            {'text':'Value 5',
+             'icon':'Value 6'},
+        ]
+    else:
+        data['vocab'] = [
+            {'text': 'Value 1',
+             'icon':  None },
+            {'text': 'Value 3',
+             'icon': None},
+            {'text': 'Value 5',
+             'icon': None },
+        ]
     data['transaction_id'] = transaction_id
     logger.info('request_vocab finished')
     emit(namespace, sj.dumps(data))
-    
+
+
 @socketio.on('request_search_results')
 def request_search_results(data=None):
     # todo: ...
@@ -57,6 +76,7 @@ def request_search_results(data=None):
     data['transaction_id'] = transaction_id
     logger.info('request_search_results finished')
     emit(namespace, sj.dumps(data))
+
 
 @socketio.on('request_items_detail')
 def request_items_detail(data=None):
@@ -90,7 +110,8 @@ def request_items_detail(data=None):
     data['transaction_id'] = transaction_id
     logger.info('request_items_detail finished')
     emit(namespace, sj.dumps(data))
-    
+
+
 @socketio.on('request_related_items')
 def request_related_items(data=None):
     # todo: ...
