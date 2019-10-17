@@ -29,6 +29,19 @@ def request_vocab(data=None):
     logger.info(params)
     data = {}
     # icon can be None
+    # query for vocab category
+    # all german skos:Concept Titles
+    # PREFIX dct: < http: // purl.org / dc / terms / >
+    # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
+    # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+    # SELECT ?title
+    # WHERE
+    # {
+    #   ?object dct: title ?title .
+    #   ?object rdf: type skos:Concept .
+    #   FILTER(lang(?title) = 'de')
+    # }
+
     if params['vocab'] == 'category':
         data['vocab'] = [
             {'text': 'Value 1',
