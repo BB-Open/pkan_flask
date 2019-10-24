@@ -24,5 +24,6 @@ setup(
         # 'xarray',
         # 'ipaddress',
         'colorlog',
+        'rdflib',
     ],
 )

@@ -6,6 +6,9 @@ from flask_socketio import SocketIO, emit
 from pkan.flask.log import logger
 # Monkey patch to let socketio use simplejson
 # Crucial!!!
+from pkan.flask.namespaces import INIT_NS
+from rdflib import Graph, URIRef
+from rdflib.namespace import NamespaceManager
 from socketio.packet import Packet
 
 Packet.json = sj
@@ -43,20 +46,20 @@ def request_vocab(data=None):
     if params['vocab'] == 'category':
         data['vocab'] = [
             {'text': 'Value 1',
-             'icon': 'Value 2',},
+             'icon': 'Value 2', },
             {'text': 'Value 3',
              'icon': 'Value 4'},
-            {'text':'Value 5',
-             'icon':'Value 6'},
+            {'text': 'Value 5',
+             'icon': 'Value 6'},
         ]
     else:
         data['vocab'] = [
             {'text': 'Value 1',
-             'icon':  None },
+             'icon': None},
             {'text': 'Value 3',
              'icon': None},
             {'text': 'Value 5',
-             'icon': None },
+             'icon': None},
         ]
     data['transaction_id'] = transaction_id
     logger.info('request_vocab finished')
@@ -76,12 +79,14 @@ def request_search_results(data=None):
         {
             'id': 'https://datenadler.de/kataloge/mik/dcat_catalog',
             'title': 'my-title',
-            'description': 'my-description'
+            'description': 'my-description',
+            'type': 'Ich bin der Type z.b. Dcat-Dataset'
         },
         {
             'id': 'https://datenadler.de/kataloge/mik/dcat_catalog',
             'title': 'my-title2',
-            'description': 'my-description2'
+            'description': 'my-description2',
+            'type': 'Ich bin der Type z.b. Dcat-Dataset'
         }
     ]
     data['transaction_id'] = transaction_id
@@ -98,8 +103,9 @@ def request_items_title_desc(data=None):
     transaction_id = data['transaction_id']
     logger.info(params)
     data = {}
-    data['title'] = 'Ich bin der Titel'
+    data['title'] = params['id']
     data['description'] = 'Ich bin die Beschreibung'
+    data['type'] = 'Ich bin der Type z.b. Dcat-Dataset'
     data['id'] = params['id']
     data['transaction_id'] = transaction_id
     logger.info('request_items_title_desc finished')
@@ -115,8 +121,37 @@ def request_label(data=None):
     transaction_id = data['transaction_id']
     logger.info(params)
     data = {}
-    data['label'] = 'Ich bin ein Label'
-    data['id'] = params['id']
+
+    id = params['id']
+
+    # testing
+    namespace_manager = NamespaceManager(Graph())
+    for prefix, ns in INIT_NS.items():
+        namespace_manager.bind(prefix, ns)
+
+    u = URIRef(id)
+
+    namespace_manager.graph.parse('https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf', format='application/rdf+xml')
+
+    label_de = namespace_manager.graph.preferredLabel(u, lang='de', labelProperties=(
+        URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
+        URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+    ))
+
+    label_en = namespace_manager.graph.preferredLabel(u, lang='en', labelProperties=(
+        URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
+        URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+    ))
+
+    if label_de:
+        label = label_de[0][1]
+    elif label_en:
+        label = label_en[0][1]
+    else:
+        label = id
+
+    data['label'] = label
+    data['id'] = id
     data['transaction_id'] = transaction_id
     logger.info('request label finished')
     emit(namespace, sj.dumps(data))
@@ -310,7 +345,6 @@ def request_items_detail(data=None):
     data['transaction_id'] = transaction_id
     logger.info('request_items_detail finished')
     emit(namespace, sj.dumps(data))
-
 
 # @socketio.on('request_related_items')
 # def request_related_items(data=None):
