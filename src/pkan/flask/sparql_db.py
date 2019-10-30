@@ -33,26 +33,30 @@ class DBManager(object):
         #   FILTER(lang(?title) = 'de')
         # }
 
-        return [
-            {'text': 'Value 1',
-             'icon': 'Value 2', },
-            {'text': 'Value 3',
-             'icon': 'Value 4'},
-            {'text': 'Value 5',
-             'icon': 'Value 6'},
-        ]
+        icons = ['fa-github', 'fa-laptop', 'fa-battery-full', 'fa-globe',
+                 'fa-balance-scale', 'fa-tree', 'fa-building', 'fa-leaf', 'fa-train',
+                 'fa-microchip']
 
-    def category_title_to_id(self, title):
+        data = []
+
+        for x in icons:
+            data.append(
+                {'text': 'Here will be the title: ' + x, 'icon_class': x}
+            )
+
+        return data
+
+    def category_title_to_sparql(self, title):
         return None
 
     def get_sorting_options(self):
         return [
             {'text': 'Value 1',
-             'icon': None},
+             'icon_class': None},
             {'text': 'Value 3',
-             'icon': None},
+             'icon_class': None},
             {'text': 'Value 5',
-             'icon': None},
+             'icon_class': None},
         ]
 
     def sorting_option_to_sparql(self, option):
