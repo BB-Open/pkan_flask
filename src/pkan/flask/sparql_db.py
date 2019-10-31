@@ -1,7 +1,6 @@
-from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
-
+from pkan.flask.namespaces import INIT_NS
 
 class DBManager(object):
     # todo
@@ -33,16 +32,26 @@ class DBManager(object):
         #   FILTER(lang(?title) = 'de')
         # }
 
-        icons = ['fa-github', 'fa-laptop', 'fa-battery-full', 'fa-globe',
-                 'fa-balance-scale', 'fa-tree', 'fa-building', 'fa-leaf', 'fa-train',
-                 'fa-microchip']
+        icons = [
+            'fa-github',
+            'fa-laptop',
+            'fa-battery-full',
+            'fa-globe',
+            'fa-balance-scale',
+            'fa-tree',
+            'fa-building',
+            'fa-leaf',
+            'fa-train',
+            'fa-microchip']
 
         data = []
 
         for x in icons:
             data.append(
-                {'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + x, 'icon_class': x, 'id': x}
-            )
+                {
+                    'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + x,
+                    'icon_class': x,
+                    'id': x})
 
         return data
 
@@ -66,7 +75,8 @@ class DBManager(object):
         return None
 
     def get_search_results(self, params):
-        ids = ['https://datenadler.de/kataloge/mik/dcat_catalog', 'https://datenadler.de/kataloge/mik/dcat_catalog']
+        ids = ['https://datenadler.de/kataloge/mik/dcat_catalog',
+               'https://datenadler.de/kataloge/mik/dcat_catalog']
 
         data = []
 
@@ -97,18 +107,25 @@ class DBManager(object):
 
         u = URIRef(id)
 
-        namespace_manager.graph.parse('https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf',
-                                      format='application/rdf+xml')
+        namespace_manager.graph.parse(
+            'https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf',
+            format='application/rdf+xml')
 
-        label_de = namespace_manager.graph.preferredLabel(u, lang='de', labelProperties=(
-            URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
-            URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
-        ))
+        label_de = namespace_manager.graph.preferredLabel(
+            u,
+            lang='de',
+            labelProperties=(
+                URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
+                URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+            ))
 
-        label_en = namespace_manager.graph.preferredLabel(u, lang='en', labelProperties=(
-            URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
-            URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
-        ))
+        label_en = namespace_manager.graph.preferredLabel(
+            u,
+            lang='en',
+            labelProperties=(
+                URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
+                URIRef('http://www.w3.org/2000/01/rdf-schema#label'),
+            ))
 
         if label_de:
             label = label_de[0][1]

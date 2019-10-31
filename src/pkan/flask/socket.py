@@ -3,7 +3,7 @@ from functools import partial
 import simplejson as sj
 from flask import Flask
 from flask_socketio import SocketIO, emit
-from pkan.flask.log import logger
+from pkan.flask.log import LOGGER
 # Monkey patch to let socketio use simplejson
 # Crucial!!!
 from pkan.flask.sparql_db import DBManager
@@ -23,11 +23,11 @@ db_manager = DBManager()
 @socketio.on('request_vocab')
 def request_vocab(data=None):
     # todo: category, ordering, ...
-    logger.info('request_vocab')
+    LOGGER.info('request_vocab')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    logger.info(params)
+    LOGGER.info(params)
     data = {}
     # icon can be None
 
@@ -36,31 +36,31 @@ def request_vocab(data=None):
     else:
         data['vocab'] = db_manager.get_sorting_options()
     data['transaction_id'] = transaction_id
-    logger.info('request_vocab finished')
+    LOGGER.info('request_vocab finished')
     emit(namespace, sj.dumps(data))
 
 
 @socketio.on('request_search_results')
 def request_search_results(data=None):
-    logger.info('request_search_results')
+    LOGGER.info('request_search_results')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    logger.info(params)
+    LOGGER.info(params)
     data = {}
     data['results'] = db_manager.get_search_results(params)
     data['transaction_id'] = transaction_id
-    logger.info('request_search_results finished')
+    LOGGER.info('request_search_results finished')
     emit(namespace, sj.dumps(data))
 
 
 @socketio.on('request_items_title_desc')
 def request_items_title_desc(data=None):
-    logger.info('request_items_title_desc')
+    LOGGER.info('request_items_title_desc')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    logger.info(params)
+    LOGGER.info(params)
     data = {}
     id = params['id']
     data['title'] = db_manager.get_title(id)
@@ -68,17 +68,17 @@ def request_items_title_desc(data=None):
     data['type'] = db_manager.get_type(id)
     data['id'] = id
     data['transaction_id'] = transaction_id
-    logger.info('request_items_title_desc finished')
+    LOGGER.info('request_items_title_desc finished')
     emit(namespace, sj.dumps(data))
 
 
 @socketio.on('request_label')
 def request_label(data=None):
-    logger.info('request label')
+    LOGGER.info('request label')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    logger.info(params)
+    LOGGER.info(params)
     data = {}
 
     id = params['id']
@@ -86,20 +86,20 @@ def request_label(data=None):
     data['label'] = db_manager.get_field_label(id)
     data['id'] = id
     data['transaction_id'] = transaction_id
-    logger.info('request label finished')
+    LOGGER.info('request label finished')
     emit(namespace, sj.dumps(data))
 
 
 @socketio.on('request_items_detail')
 def request_items_detail(data=None):
     # todo: ...
-    logger.info('request_items_detail')
+    LOGGER.info('request_items_detail')
     params = data['params']
     namespace = data['namespace']
     transaction_id = data['transaction_id']
-    logger.info(params)
+    LOGGER.info(params)
     data = {}
     data['rdf_ttl'] = db_manager.get_items_detail(params['id'])
     data['transaction_id'] = transaction_id
-    logger.info('request_items_detail finished')
+    LOGGER.info('request_items_detail finished')
     emit(namespace, sj.dumps(data))

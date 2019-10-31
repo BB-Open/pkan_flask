@@ -1,15 +1,18 @@
+"""
+Default Config for Pkan Fla
+"""
 from logging import INFO
 from os.path import join
 
 PKAN_LOG_DIR = "/var/log/pkan"
 # The logfiles
-pkan_log_file = join(PKAN_LOG_DIR, "flask.log")
+PKAN_LOG_FILE = join(PKAN_LOG_DIR, "flask.log")
 # The desired loglevel for console output
-log_level_console = INFO
+LOG_LEVEL_CONSOLE = INFO
 # The desired loglevel for the logfile
-log_level_file = INFO
+LOG_LEVEL_FILE = INFO
 # Colors for the log console output (Options see colorlog-package)
-log_colors =  {
+LOG_COLOURS = {
     'DEBUG': 'cyan',
     'INFO': 'green',
     'WARNING': 'yellow',
