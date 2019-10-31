@@ -30,7 +30,6 @@ def request_vocab(data=None):
     :param data:
     :return:
     """
-    # todo: category, ordering, ...
     LOGGER.info('request_vocab')
     params = data['params']
     namespace = data['namespace']
@@ -120,7 +119,6 @@ def request_items_detail(data=None):
     :param data:
     :return:
     """
-    # todo: ...
     LOGGER.info('request_items_detail')
     params = data['params']
     namespace = data['namespace']

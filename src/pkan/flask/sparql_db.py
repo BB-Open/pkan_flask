@@ -1,24 +1,47 @@
+"""
+DB Manager for Sparql Queries
+"""
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
 from pkan.flask.namespaces import INIT_NS
 
-class DBManager(object):
-    # todo
+
+class DBManager():
+    """
+    DB Manager Class providing API
+    """
 
     def __init__(self):
+        """
+        Init
+        """
         self.open_connection()
 
     def open_connection(self):
-        pass
+        """
+        Open connection to sparql store
+        :return:
+        """
 
     def close_connection(self):
-        pass
+        """
+        Close Connection
+        :return:
+        """
 
     def reopen_connection(self):
+        """
+        Close and Open Connection
+        :return:
+        """
         self.close_connection()
         self.open_connection()
 
     def get_category_vocab(self):
+        """
+        Provide a vocab including the categories
+        :return:
+        """
         # query for vocab category
         # all german skos:Concept Titles
         # PREFIX dct: < http: // purl.org / dc / terms / >
@@ -46,19 +69,28 @@ class DBManager(object):
 
         data = []
 
-        for x in icons:
+        for icon in icons:
             data.append(
                 {
-                    'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + x,
-                    'icon_class': x,
-                    'id': x})
+                    'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + icon,
+                    'icon_class': icon,
+                    'id': icon})
 
         return data
 
-    def category_id_to_sparql(self, title):
-        return None
+    def category_id_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
 
     def get_sorting_options(self):
+        """
+        Get a Vocab with the Sorting Options like Newest
+        :return:
+        """
         return [
             {'text': 'Value 1',
              'id': 'value_1',
@@ -71,48 +103,82 @@ class DBManager(object):
              'icon_class': None},
         ]
 
-    def sorting_option_to_sparql(self, option):
-        return None
+    def sorting_option_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
 
     def get_search_results(self, params):
+        """
+        Get Search results from sparql store
+        :param params:
+        :return:
+        """
+        _sorting = self.sorting_option_to_sparql(params)
+        _categorie = self.category_id_to_sparql(params)
+
         ids = ['https://datenadler.de/kataloge/mik/dcat_catalog',
                'https://datenadler.de/kataloge/mik/dcat_catalog']
 
         data = []
 
-        for id in ids:
+        for obj_id in ids:
             data.append({
-                'id': id,
-                'title': self.get_title(id),
-                'description': self.get_description(id),
-                'type': self.get_type(id)
+                'id': obj_id,
+                'title': self.get_title(obj_id),
+                'description': self.get_description(obj_id),
+                'type': self.get_type(obj_id)
             })
 
         return data
 
-    def get_title(self, id):
-        return id
+    def get_title(self, obj_id):
+        """
+        Get the title related to a id
+        :param obj_id:
+        :return:
+        """
+        return obj_id
 
-    def get_description(self, id):
+    def get_description(self, _obj_id):
+        """
+        Get the description related to a obj_id
+        :param obj_id:
+        :return:
+        """
         return 'A Description'
 
-    def get_type(self, id):
+    def get_type(self, _obj_id):
+        """
+        Get the type related to a obj_id
+        :param _obj_id:
+        :return:
+        """
         return 'A Type'
 
-    def get_field_label(self, id):
+    def get_field_label(self, label_id):
+        """
+        Get the label for a field id
+        :param label_id:
+        :return:
+        """
+
         # testing
         namespace_manager = NamespaceManager(Graph())
-        for prefix, ns in INIT_NS.items():
-            namespace_manager.bind(prefix, ns)
+        for prefix, namespace in INIT_NS.items():
+            namespace_manager.bind(prefix, namespace)
 
-        u = URIRef(id)
+        uri_ref = URIRef(label_id)
 
         namespace_manager.graph.parse(
             'https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf',
             format='application/rdf+xml')
 
         label_de = namespace_manager.graph.preferredLabel(
-            u,
+            uri_ref,
             lang='de',
             labelProperties=(
                 URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
@@ -120,7 +186,7 @@ class DBManager(object):
             ))
 
         label_en = namespace_manager.graph.preferredLabel(
-            u,
+            uri_ref,
             lang='en',
             labelProperties=(
                 URIRef('http://www.w3.org/2004/02/skos/core#prefLabel'),
@@ -132,11 +198,16 @@ class DBManager(object):
         elif label_en:
             label = label_en[0][1]
         else:
-            label = id
+            label = label_id
 
         return label
 
-    def get_items_detail(self, id):
+    def get_items_detail(self, _obj_id):
+        """
+        Get details of an item for detail view
+        :param _obj_id:
+        :return:
+        """
         return """@prefix adms: <http://www.w3.org/ns/adms#> .
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .

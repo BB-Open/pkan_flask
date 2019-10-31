@@ -38,11 +38,11 @@ try:
         secondary_log_colors={},
         style='%'
     )
-    LOGGER = colorlog.getLogger("eprofile")
+    LOGGER = colorlog.getLogger("pkan_flask")
 
-except Exception as exc:
+except ImportError as exc:
     print(exc)
-    LOGGER = getLogger("eprofile")
+    LOGGER = getLogger("pkan_flask")
     FORMATTER = Formatter(
         '%(asctime)s [%(process)d] %(levelname)-8s %(message)s',
         "%Y-%m-%d %H:%M:%S")
