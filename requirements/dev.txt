@@ -6,7 +6,7 @@
 Flask-DebugToolbar==0.10.1
 
 # PEP8
-pylint==1.8.1
+pylint==2.4.3
 
 # Coverage
 coverage==4.4.2
