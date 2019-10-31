@@ -1,0 +1,10 @@
+sudo: false  # http://docs.travis-ci.com/user/migrating-from-legacy/
+language: python
+python:
+  - 3.7
+install: python setup.py develop
+before_script:
+  - export FLASK_APP="$TRAVIS_BUILD_DIR/autoapp.py"
+  - export FLASK_DEBUG=1
+
+script: flask test
