@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+"""
+    RDF Settings
+"""
 from rdflib.namespace import DC
 from rdflib.namespace import DCTERMS
 from rdflib.namespace import FOAF
@@ -15,7 +17,6 @@ VCARD = Namespace('http://www.w3.org/2006/vcard/ns#')
 ADMS = Namespace('http://www.w3.org/ns/adms#')
 
 # List of namespaces for SPARQL Queries.
-# Todo: would be good if this list came from the plone config
 INIT_NS = {
     'dct': DCTERMS,
     'foaf': FOAF,

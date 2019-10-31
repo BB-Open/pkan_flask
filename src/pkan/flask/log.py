@@ -40,28 +40,28 @@ try:
     )
     LOGGER = colorlog.getLogger("eprofile")
 
-except Exception as e:
-    print(e)
+except Exception as exc:
+    print(exc)
     LOGGER = getLogger("eprofile")
     FORMATTER = Formatter(
         '%(asctime)s [%(process)d] %(levelname)-8s %(message)s',
         "%Y-%m-%d %H:%M:%S")
 
-timedRotatingFileHandler = TimedRotatingFileHandler(
+ROT_FILE_HANDLER = TimedRotatingFileHandler(
     cfg.PKAN_LOG_FILE, "D", 1, 15)
-timedRotatingFileHandlerFormatter = FORMATTER
-timedRotatingFileHandler.setFormatter(timedRotatingFileHandlerFormatter)
-timedRotatingFileHandler.setLevel(cfg.LOG_LEVEL_FILE)
+FILE_HANDLER_FORMATTER = FORMATTER
+ROT_FILE_HANDLER.setFormatter(FILE_HANDLER_FORMATTER)
+ROT_FILE_HANDLER.setLevel(cfg.LOG_LEVEL_FILE)
 
-consoleHandler = StreamHandler(stdout)
+CONSOL_HANDLER = StreamHandler(stdout)
 # formatter = Formatter('%(asctime)s %(levelname)-8s %(message)s',
 #                      "%Y-%m-%d %H:%M:%S")
-consoleFormatter = FORMATTER
-consoleHandler.setFormatter(consoleFormatter)
-consoleHandler.setLevel(cfg.LOG_LEVEL_CONSOLE)
+CONSOLE_FORMATTER = FORMATTER
+CONSOL_HANDLER.setFormatter(CONSOLE_FORMATTER)
+CONSOL_HANDLER.setLevel(cfg.LOG_LEVEL_CONSOLE)
 
-LOGGER.addHandler(timedRotatingFileHandler)
-LOGGER.addHandler(consoleHandler)
+LOGGER.addHandler(ROT_FILE_HANDLER)
+LOGGER.addHandler(CONSOL_HANDLER)
 
 LOGGER.propagate = False
 LOGGER.setLevel(DEBUG)
