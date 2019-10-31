@@ -41,21 +41,24 @@ class DBManager(object):
 
         for x in icons:
             data.append(
-                {'text': 'Here will be the title: ' + x, 'icon_class': x}
+                {'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + x, 'icon_class': x, 'id': x}
             )
 
         return data
 
-    def category_title_to_sparql(self, title):
+    def category_id_to_sparql(self, title):
         return None
 
     def get_sorting_options(self):
         return [
             {'text': 'Value 1',
+             'id': 'value_1',
              'icon_class': None},
             {'text': 'Value 3',
+             'id': 'value_3',
              'icon_class': None},
             {'text': 'Value 5',
+             'id': 'value_5',
              'icon_class': None},
         ]
 
