@@ -3,6 +3,9 @@ DB Manager for Sparql Queries
 """
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
+
+from pkan.flask.configs.config_default import BATCH_SIZE
+from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 
 
@@ -120,12 +123,20 @@ class DBManager():
         _sorting = self.sorting_option_to_sparql(params)
         _categorie = self.category_id_to_sparql(params)
 
-        ids = ['https://datenadler.de/kataloge/mik/dcat_catalog',
-               'https://datenadler.de/kataloge/mik/dcat_catalog']
+        ids = [
+            'https://datenadler.de/kataloge/mik/dcat_catalog',
+            'https://datenadler.de/kataloge/mik/dcat_catalog/kommunalverzeichnis-land-brandenburg'
+        ]
+        ids = ids * 80
+        ids.append('http://publications.europa.eu/resource/authority/data-theme/GOVE')
+
+        batch_start = params['batch_start']
+        batch_end = params['batch_end']
+        ids_displayed = ids[batch_start*BATCH_SIZE:batch_end*BATCH_SIZE]
 
         data = []
 
-        for obj_id in ids:
+        for obj_id in ids_displayed:
             data.append({
                 'id': obj_id,
                 'title': self.get_title(obj_id),
@@ -133,7 +144,9 @@ class DBManager():
                 'type': self.get_type(obj_id)
             })
 
-        return data
+        LOGGER.info(data)
+
+        return data, len(ids)
 
     def get_title(self, obj_id):
         """

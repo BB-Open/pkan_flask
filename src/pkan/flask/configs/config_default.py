@@ -19,3 +19,7 @@ LOG_COLOURS = {
     'ERROR': 'red',
     'CRITICAL': 'red,bg_white',
 }
+
+# SPARQL RESULT BATCHING
+
+BATCH_SIZE = 10

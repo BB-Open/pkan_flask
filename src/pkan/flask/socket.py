@@ -60,7 +60,9 @@ def request_search_results(data=None):
     transaction_id = data['transaction_id']
     LOGGER.info(params)
     data = {}
-    data['results'] = DB_MANAGER.get_search_results(params)
+    data['results'], data['number_results'] = DB_MANAGER.get_search_results(params)
+    data['batch_start'] = params['batch_start']
+    data['batch_end'] = params['batch_end']
     data['transaction_id'] = transaction_id
     LOGGER.info('request_search_results finished')
     emit(namespace, sj.dumps(data))
