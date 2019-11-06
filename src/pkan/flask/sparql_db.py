@@ -89,6 +89,178 @@ class DBManager():
         """
         return ''
 
+    def get_file_format_vocab(self):
+        """
+        Provide a vocab including the categories
+        :return:
+        """
+        # query for vocab category
+        # all german skos:Concept Titles
+        # PREFIX dct: < http: // purl.org / dc / terms / >
+        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
+        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+        # SELECT ?title
+        # WHERE
+        # {
+        #   ?object dct: title ?title .
+        #   ?object rdf: type skos:Concept .
+        #   FILTER(lang(?title) = 'de')
+        # }
+
+        formats = [
+            'CSV', 'PDF', 'TXT'
+        ]
+
+        data = []
+
+        for format_name in formats:
+            data.append(
+                {
+                    'text': format_name,
+                    'icon_class': None,
+                    'id': format_name})
+
+        return data
+
+    def file_format_id_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
+
+    def get_publisher_vocab(self):
+        """
+        Provide a vocab including the categories
+        :return:
+        """
+        # query for vocab category
+        # all german skos:Concept Titles
+        # PREFIX dct: < http: // purl.org / dc / terms / >
+        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
+        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+        # SELECT ?title
+        # WHERE
+        # {
+        #   ?object dct: title ?title .
+        #   ?object rdf: type skos:Concept .
+        #   FILTER(lang(?title) = 'de')
+        # }
+
+        data_sets = [
+            'Value 1', 'Value 2', 'Value 3', 'Value 4'
+        ]
+
+        data = []
+
+        for entry in data_sets:
+            data.append(
+                {
+                    'text': entry,
+                    'icon_class': None,
+                    'id': entry})
+
+        return data
+
+    def file_publisher_id_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
+
+    def get_license_vocab(self):
+        """
+        Provide a vocab including the categories
+        :return:
+        """
+        # query for vocab category
+        # all german skos:Concept Titles
+        # PREFIX dct: < http: // purl.org / dc / terms / >
+        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
+        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+        # SELECT ?title
+        # WHERE
+        # {
+        #   ?object dct: title ?title .
+        #   ?object rdf: type skos:Concept .
+        #   FILTER(lang(?title) = 'de')
+        # }
+
+        data_sets = [
+            'Value 1', 'Value 2', 'Value 3', 'Value 4'
+        ]
+
+        data = []
+
+        for entry in data_sets:
+            data.append(
+                {
+                    'text': entry,
+                    'icon_class': None,
+                    'id': entry})
+
+        return data
+
+    def file_license_id_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
+
+    def get_keywords_vocab(self):
+        """
+        Provide a vocab including the categories
+        :return:
+        """
+        # query for vocab category
+        # all german skos:Concept Titles
+        # PREFIX dct: < http: // purl.org / dc / terms / >
+        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
+        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+        # SELECT ?title
+        # WHERE
+        # {
+        #   ?object dct: title ?title .
+        #   ?object rdf: type skos:Concept .
+        #   FILTER(lang(?title) = 'de')
+        # }
+
+        data_sets = [
+            'Value 1', 'Value 2', 'Value 3', 'Value 4'
+        ]
+
+        data = []
+
+        for entry in data_sets:
+            data.append(
+                {
+                    'text': entry,
+                    'icon_class': None,
+                    'id': entry})
+
+        return data
+
+    def file_keywords_id_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param title:
+        :return:
+        """
+        return ''
+
+    def last_change_date_to_sparql(self, _params):
+        """
+        Build up the sparql filter to add to sparql query
+        :param _params:
+        :return:
+        """
+        return ''
+
     def get_sorting_options(self):
         """
         Get a Vocab with the Sorting Options like Newest

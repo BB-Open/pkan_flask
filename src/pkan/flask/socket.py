@@ -36,10 +36,19 @@ def request_vocab(data=None):
     transaction_id = data['transaction_id']
     LOGGER.info(params)
     data = {}
-    # icon can be None
 
-    if params['vocab'] == 'category':
+    vocab = params['vocab']
+
+    if vocab == 'category':
         data['vocab'] = DB_MANAGER.get_category_vocab()
+    elif vocab == 'file_format':
+        data['vocab'] = DB_MANAGER.get_file_format_vocab()
+    elif vocab == 'license':
+        data['vocab'] = DB_MANAGER.get_license_vocab()
+    elif vocab == 'keywords':
+        data['vocab'] = DB_MANAGER.get_keywords_vocab()
+    elif vocab == 'publisher':
+        data['vocab'] = DB_MANAGER.get_publisher_vocab()
     else:
         data['vocab'] = DB_MANAGER.get_sorting_options()
     data['transaction_id'] = transaction_id
