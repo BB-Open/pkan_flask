@@ -1,7 +1,0 @@
-flask
-flask-socketio
-eventlet
-gunicorn
-simplejson
-colorlog
-rdflib
