@@ -15,8 +15,8 @@ from pkan.flask.sparql_db import DBManager
 Packet.json = sj
 sj.dumps = partial(sj.dumps, ignore_nan=True)
 
-APP = Flask(__name__)
-SOCKETIO = SocketIO(APP)
+app = Flask(__name__)
+SOCKETIO = SocketIO(app)
 
 DB_MANAGER = DBManager()
 

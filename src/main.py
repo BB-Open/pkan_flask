@@ -3,8 +3,8 @@
 
 # Initialize Flask.
 from pkan.flask.socket import (
-    SOCKETIO, APP)
+    SOCKETIO, app)
 
 
 if __name__ == '__main__':
-    SOCKETIO.run(APP, debug=True)
+    SOCKETIO.run(app, debug=True)
