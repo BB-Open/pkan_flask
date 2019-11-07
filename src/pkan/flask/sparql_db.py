@@ -68,7 +68,10 @@ class DBManager():
             'fa-building',
             'fa-leaf',
             'fa-train',
-            'fa-microchip']
+            'fa-microchip',
+            'fa-stethoscope',
+            'fa-shopping-cart',
+            'fa-inbox']
 
         data = []
 
