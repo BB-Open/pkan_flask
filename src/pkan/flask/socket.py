@@ -45,8 +45,6 @@ def request_vocab(data=None):
         data['vocab'] = DB_MANAGER.get_file_format_vocab()
     elif vocab == 'license':
         data['vocab'] = DB_MANAGER.get_license_vocab()
-    elif vocab == 'keywords':
-        data['vocab'] = DB_MANAGER.get_keywords_vocab()
     elif vocab == 'publisher':
         data['vocab'] = DB_MANAGER.get_publisher_vocab()
     else:
