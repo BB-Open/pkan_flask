@@ -6,14 +6,10 @@ from functools import partial
 import simplejson as sj
 from flask import Flask
 from flask_socketio import SocketIO, emit
-from socketio.packet import Packet
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
 
-# Monkey Patch to use sj for socketio
-Packet.json = sj
-sj.dumps = partial(sj.dumps, ignore_nan=True)
 
 app = Flask(__name__)
 SOCKETIO = SocketIO(app)

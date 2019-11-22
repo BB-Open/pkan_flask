@@ -2,7 +2,7 @@
 """Simple Flask bases websocket demo."""
 
 # Initialize Flask.
-from pkan.flask.socket import (
+from pkan.flask.websocket import (
     SOCKETIO, app)
 
 

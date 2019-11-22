@@ -6,7 +6,13 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-flask = "*"
+Flask = "==1.0.3"
+Flask-SocketIO = "==4.0.0"
+eventlet = "==0.25.0"
+gunicorn = "==19.9.0"
+simplejson = "==3.16.0"
+colorlog = "==4.0.2"
+rdflib = "==4.2.2"
 
 [requires]
-python_version = "3.5"
+python_version = "3.7"

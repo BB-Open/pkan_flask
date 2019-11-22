@@ -1,12 +1,12 @@
 """
 DB Manager for Sparql Queries
 """
-from rdflib import Graph, URIRef
-from rdflib.namespace import NamespaceManager
-
 from pkan.flask.configs.config_default import BATCH_SIZE
 from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
+from rdflib import Graph, URIRef
+from rdflib.namespace import NamespaceManager
+from SPARQLWrapper import SPARQLWrapper2
 
 
 class DBManager():
