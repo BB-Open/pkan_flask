@@ -6,7 +6,7 @@ from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
-from SPARQLWrapper import SPARQLWrapper2
+# from SPARQLWrapper import SPARQLWrapper2
 
 
 class DBManager():
