@@ -1,5 +1,5 @@
 from flask import send_file, request
-from pkan.flask.socket import app, DB_MANAGER
+from pkan.flask.websocket import app, DB_MANAGER
 
 
 @app.route('/download')
