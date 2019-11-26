@@ -4,6 +4,8 @@
 # Initialize Flask.
 from pkan.flask.socket import (
     SOCKETIO, app)
+# need import for routing
+import pkan.flask.routing
 
 
 if __name__ == '__main__':
