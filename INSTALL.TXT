@@ -1,0 +1,12 @@
+Installation of pkan_flask
+
+Development:
+
+*   Download the sourcecode
+$ git clone  https://github.com/BB-Open/pkan_flask.git
+$ cd pkan_flask
+$ pipenv install --python=3 '-e .'
+
+Production:
+
+same as above
