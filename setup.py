@@ -21,6 +21,6 @@ setup(
         'simplejson',
         'colorlog',
         'rdflib',
-        'SPARQLWrapper'
+        'pkan.blazegraph',
     ],
 )
