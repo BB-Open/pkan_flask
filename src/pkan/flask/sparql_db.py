@@ -6,7 +6,7 @@ from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
-from SPARQLWrapper import SPARQLWrapper2
+# from SPARQLWrapper import SPARQLWrapper2
 
 
 class DBManager():
@@ -552,3 +552,9 @@ class DBManager():
     rdfs:isDefinedBy "http://dcat-ap.de/def/licenses/dl-zero-de/2.0" ;
     adms:identifier "https://datenadler.de/licenses/dl-zero-de-2-0" .
     """
+
+    def get_download_file(self, params):
+        file_path = 'test_data/test.txt'
+        file_name = 'test.txt'
+
+        return file_path, file_name
