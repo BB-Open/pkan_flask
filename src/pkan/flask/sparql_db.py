@@ -1,13 +1,12 @@
 """
 DB Manager for Sparql Queries
 """
-from pkan.flask.configs.config_default import BATCH_SIZE
+from pkan.flask.configs.config_default import BATCH_SIZE, PLONE_ALL_OBJECTS_NAMESPACE, PLONE_DCAT_NAMESPACE, PLONE_SKOS_CONCEPT_NAMESPACE
 from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
 from rdflib.namespace import NamespaceManager
-# from SPARQLWrapper import SPARQLWrapper2
-
+from pkan.blazegraph.api import tripel_store
 
 class DBManager():
     """
@@ -19,27 +18,6 @@ class DBManager():
 
         Init
         """
-        self.open_connection()
-
-    def open_connection(self):
-        """
-        Open connection to sparql store
-        :return:
-        """
-
-    def close_connection(self):
-        """
-        Close Connection
-        :return:
-        """
-
-    def reopen_connection(self):
-        """
-        Close and Open Connection
-        :return:
-        """
-        self.close_connection()
-        self.open_connection()
 
     def get_category_vocab(self):
         """
@@ -61,39 +39,33 @@ class DBManager():
 
 
         SPARQL = """
-            prefix foaf: < http: // xmlns.com / foaf / 0.1 / >
-            prefix skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+            prefix skos: <http://www.w3.org/2004/02/skos/core#>
             SELECT ?s ?css
             WHERE
-            {?s a skos: Concept.
-            ?s foaf: depiction ?css.
+            {?s a skos:Concept.
+            ?s foaf:depiction?css.
             }
         """
 
-        sparql = SPARQLWrapper2(BLAZEGRAPH_BASE)
-        icons = [
-            'fa-github',
-            'fa-laptop',
-            'fa-battery-full',
-            'fa-globe',
-            'fa-balance-scale',
-            'fa-tree',
-            'fa-building',
-            'fa-leaf',
-            'fa-train',
-            'fa-microchip',
-            'fa-stethoscope',
-            'fa-shopping-cart',
-            'fa-inbox']
+        sparql = tripel_store.sparql_for_namespace(PLONE_SKOS_CONCEPT_NAMESPACE)
+        res = sparql.query(SPARQL)
+        print(res)
 
         data = []
 
-        for icon in icons:
-            data.append(
-                {
-                    'text': 'Landwirtschaft, Forstwirtschaft, Fischerei und Lebensmittel: ' + icon,
-                    'icon_class': icon,
-                    'id': icon})
+        for x in res.bindings:
+            print(x)
+            uri = x['s'].value
+            icon_class = x['css'].value
+            print(icon_class)
+            print(uri)
+
+            data.append({
+                'text': uri,
+                'id': uri,
+                'icon_class': icon_class
+            })
 
         return data
 
