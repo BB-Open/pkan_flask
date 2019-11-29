@@ -21,5 +21,6 @@ setup(
         'simplejson',
         'colorlog',
         'rdflib',
+        'SPARQLWrapper'
     ],
 )

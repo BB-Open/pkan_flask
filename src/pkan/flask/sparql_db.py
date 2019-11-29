@@ -15,7 +15,8 @@ class DBManager():
     """
 
     def __init__(self):
-        """
+        """imprt pkan
+
         Init
         """
         self.open_connection()
@@ -58,6 +59,18 @@ class DBManager():
         #   FILTER(lang(?title) = 'de')
         # }
 
+
+        SPARQL = """
+            prefix foaf: < http: // xmlns.com / foaf / 0.1 / >
+            prefix skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
+            SELECT ?s ?css
+            WHERE
+            {?s a skos: Concept.
+            ?s foaf: depiction ?css.
+            }
+        """
+
+        sparql = SPARQLWrapper2(BLAZEGRAPH_BASE)
         icons = [
             'fa-github',
             'fa-laptop',

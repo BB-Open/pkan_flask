@@ -1,5 +1,5 @@
 """
-Default Config for Pkan Fla
+Default Config for Pkan Flask
 """
 from logging import INFO
 from os.path import join
@@ -21,5 +21,11 @@ LOG_COLOURS = {
 }
 
 # SPARQL RESULT BATCHING
-
 BATCH_SIZE = 10
+
+# BASE URI of Blazegraph
+BLAZEGRAPH_BASE = 'http://localhost:9999'
+
+PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
+
+
