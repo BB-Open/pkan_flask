@@ -55,14 +55,11 @@ class DBManager():
         data = []
 
         for x in res.bindings:
-            print(x)
             uri = x['s'].value
             icon_class = x['css'].value
-            print(icon_class)
-            print(uri)
 
             data.append({
-                'text': uri,
+                'text': self.get_field_label(uri),
                 'id': uri,
                 'icon_class': icon_class
             })
