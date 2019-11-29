@@ -5,6 +5,7 @@ from pkan.flask.configs.config_default import BATCH_SIZE, PLONE_ALL_OBJECTS_NAME
 from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
+from rdflib.exceptions import ParserError
 from rdflib.namespace import NamespaceManager
 from pkan.blazegraph.api import tripel_store
 
@@ -41,25 +42,27 @@ class DBManager():
         SPARQL = """
             prefix foaf: <http://xmlns.com/foaf/0.1/>
             prefix skos: <http://www.w3.org/2004/02/skos/core#>
-            SELECT ?s ?css
+            PREFIX dct: <http://purl.org/dc/terms/>
+            SELECT ?s ?css ?title
             WHERE
             {?s a skos:Concept.
             ?s foaf:depiction?css.
+            ?s dct:title ?title.
+            FILTER(lang(?title) = 'de')
             }
         """
 
         sparql = tripel_store.sparql_for_namespace(PLONE_SKOS_CONCEPT_NAMESPACE)
         res = sparql.query(SPARQL)
-        print(res)
 
         data = []
 
         for x in res.bindings:
             uri = x['s'].value
             icon_class = x['css'].value
-
+            title = x['title'].value
             data.append({
-                'text': self.get_field_label(uri),
+                'text': title,
                 'id': uri,
                 'icon_class': icon_class
             })
@@ -310,9 +313,12 @@ class DBManager():
 
         uri_ref = URIRef(label_id)
 
-        namespace_manager.graph.parse(
-            'https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf',
-            format='application/rdf+xml')
+        try:
+            namespace_manager.graph.parse(
+                'https://raw.githubusercontent.com/w3c/dxwg/gh-pages/dcat/rdf/dcat.rdf',
+                format='application/rdf+xml')
+        except ParserError:
+            return label_id
 
         label_de = namespace_manager.graph.preferredLabel(
             uri_ref,
