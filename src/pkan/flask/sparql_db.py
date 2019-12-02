@@ -1,13 +1,15 @@
 """
 DB Manager for Sparql Queries
 """
-from pkan.flask.configs.config_default import BATCH_SIZE, PLONE_ALL_OBJECTS_NAMESPACE, PLONE_DCAT_NAMESPACE, PLONE_SKOS_CONCEPT_NAMESPACE
+from pkan.flask.configs.config_default import BATCH_SIZE, PLONE_DCAT_NAMESPACE, PLONE_SKOS_CONCEPT_NAMESPACE
 from pkan.flask.log import LOGGER
 from pkan.flask.namespaces import INIT_NS
 from rdflib import Graph, URIRef
 from rdflib.exceptions import ParserError
 from rdflib.namespace import NamespaceManager
+
 from pkan.blazegraph.api import tripel_store
+
 
 class DBManager():
     """
@@ -25,19 +27,6 @@ class DBManager():
         Provide a vocab including the categories
         :return:
         """
-        # query for vocab category
-        # all german skos:Concept Titles
-        # PREFIX dct: < http: // purl.org / dc / terms / >
-        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
-        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
-        # SELECT ?title
-        # WHERE
-        # {
-        #   ?object dct: title ?title .
-        #   ?object rdf: type skos:Concept .
-        #   FILTER(lang(?title) = 'de')
-        # }
-
 
         SPARQL = """
             prefix foaf: <http://xmlns.com/foaf/0.1/>
@@ -82,31 +71,29 @@ class DBManager():
         Provide a vocab including the categories
         :return:
         """
-        # query for vocab category
-        # all german skos:Concept Titles
-        # PREFIX dct: < http: // purl.org / dc / terms / >
-        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
-        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
-        # SELECT ?title
-        # WHERE
-        # {
-        #   ?object dct: title ?title .
-        #   ?object rdf: type skos:Concept .
-        #   FILTER(lang(?title) = 'de')
-        # }
+        SPARQL = """
+            PREFIX dct: <http://purl.org/dc/terms/>
+            SELECT ?s ?title
+            WHERE
+            {?s a dct:MediaTypeOrExtent.
+             ?s dct:title ?title.
+             FILTER(lang(?title) = 'de')
+            }
+        """
 
-        formats = [
-            'CSV', 'PDF', 'TXT'
-        ]
+        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        res = sparql.query(SPARQL)
 
         data = []
 
-        for format_name in formats:
-            data.append(
-                {
-                    'text': format_name,
-                    'icon_class': None,
-                    'id': format_name})
+        for x in res.bindings:
+            uri = x['s'].value
+            title = x['title'].value
+            data.append({
+                'text': title,
+                'id': uri,
+                'icon_class': None
+            })
 
         return data
 
@@ -123,31 +110,29 @@ class DBManager():
         Provide a vocab including the categories
         :return:
         """
-        # query for vocab category
-        # all german skos:Concept Titles
-        # PREFIX dct: < http: // purl.org / dc / terms / >
-        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
-        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
-        # SELECT ?title
-        # WHERE
-        # {
-        #   ?object dct: title ?title .
-        #   ?object rdf: type skos:Concept .
-        #   FILTER(lang(?title) = 'de')
-        # }
+        SPARQL = """
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+            SELECT ?s ?title
+            WHERE
+            {?s a foaf:Agent.
+             ?s foaf:name ?title.
+             FILTER(lang(?title) = 'de')
+            }
+                """
 
-        data_sets = [
-            'Value 1', 'Value 2', 'Value 3', 'Value 4'
-        ]
+        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        res = sparql.query(SPARQL)
 
         data = []
 
-        for entry in data_sets:
-            data.append(
-                {
-                    'text': entry,
-                    'icon_class': None,
-                    'id': entry})
+        for x in res.bindings:
+            uri = x['s'].value
+            title = x['title'].value
+            data.append({
+                'text': title,
+                'id': uri,
+                'icon_class': None
+            })
 
         return data
 
@@ -164,31 +149,29 @@ class DBManager():
         Provide a vocab including the categories
         :return:
         """
-        # query for vocab category
-        # all german skos:Concept Titles
-        # PREFIX dct: < http: // purl.org / dc / terms / >
-        # PREFIX rdf: < http: // www.w3.org / 1999 / 02 / 22 - rdf - syntax - ns  # >
-        # PREFIX skos: < http: // www.w3.org / 2004 / 02 / skos / core  # >
-        # SELECT ?title
-        # WHERE
-        # {
-        #   ?object dct: title ?title .
-        #   ?object rdf: type skos:Concept .
-        #   FILTER(lang(?title) = 'de')
-        # }
+        SPARQL = """
+            PREFIX dct: <http://purl.org/dc/terms/>
+            SELECT ?s ?title
+            WHERE
+            {?s a dct:LicenseDocument.
+             ?s dct:title ?title.
+             FILTER(lang(?title) = 'de')
+            }
+        """
 
-        data_sets = [
-            'Value 1', 'Value 2', 'Value 3', 'Value 4'
-        ]
+        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        res = sparql.query(SPARQL)
 
         data = []
 
-        for entry in data_sets:
-            data.append(
-                {
-                    'text': entry,
-                    'icon_class': None,
-                    'id': entry})
+        for x in res.bindings:
+            uri = x['s'].value
+            title = x['title'].value
+            data.append({
+                'text': title,
+                'id': uri,
+                'icon_class': None
+            })
 
         return data
 
@@ -221,15 +204,22 @@ class DBManager():
         Get a Vocab with the Sorting Options like Newest
         :return:
         """
+        # todo
         return [
-            {'text': 'Value 1',
-             'id': 'value_1',
+            {'text': 'Relevanz',
+             'id': 'relevance',
              'icon_class': None},
-            {'text': 'Value 3',
-             'id': 'value_3',
+            {'text': 'Datum aufsteigend',
+             'id': 'date_asc',
              'icon_class': None},
-            {'text': 'Value 5',
-             'id': 'value_5',
+            {'text': 'Datum absteigend',
+             'id': 'date_desc',
+             'icon_class': None},
+            {'text': 'Alphabetisch aufsteigend',
+             'id': 'letter_asc',
+             'icon_class': None},
+            {'text': 'Alphabetisch absteigend',
+             'id': 'letter_desc',
              'icon_class': None},
         ]
 
@@ -259,7 +249,7 @@ class DBManager():
 
         batch_start = params['batch_start']
         batch_end = params['batch_end']
-        ids_displayed = ids[batch_start*BATCH_SIZE:batch_end*BATCH_SIZE]
+        ids_displayed = ids[batch_start * BATCH_SIZE:batch_end * BATCH_SIZE]
 
         data = []
 
