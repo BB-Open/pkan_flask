@@ -30,4 +30,37 @@ PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
 PLONE_DCAT_NAMESPACE = 'dcat_store'
 PLONE_ALL_OBJECTS_NAMESPACE = 'complete_store'
 
+TITLE_FIELDS = [
+    'dct:title', 'foaf:name'
+]
 
+TITLE_PREFIXES = [
+    'dct: <http://purl.org/dc/terms/>',
+    'foaf: <http://xmlns.com/foaf/0.1/>',
+]
+
+DESCRIPTION_FIELDS = [
+    'dct:description'
+]
+
+DESCRIPTION_PREFIXES = [
+    'dct: <http://purl.org/dc/terms/>',
+]
+
+LABEL_FIELDS = [
+    'dct:title',
+
+]
+
+LABEL_PREFIXES = [
+    'dct: <http://purl.org/dc/terms/>',
+]
+
+TRANSLATION_SPARQL_QUERY_RAW = """
+                    {prefix}
+                    SELECT ?title
+                    WHERE {{
+                     <{uri}> {fields} ?title.
+                     FILTER(lang(?title) = '{lang}')
+                    }}
+                """
