@@ -6,6 +6,7 @@ from functools import partial
 import simplejson as sj
 from flask import Flask
 from flask_socketio import SocketIO, emit
+from flask_cors import CORS, cross_origin
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
@@ -20,6 +21,7 @@ DB_MANAGER = DBManager()
 # DATA OBJECTS
 
 @SOCKETIO.on('request_vocab')
+@cross_origin()
 def request_vocab(data=None):
     """
     Request a vocabulary for selecting in frontend
@@ -51,6 +53,7 @@ def request_vocab(data=None):
 
 
 @SOCKETIO.on('request_search_results')
+@cross_origin()
 def request_search_results(data=None):
     """
     Request results of current search
@@ -72,6 +75,7 @@ def request_search_results(data=None):
 
 
 @SOCKETIO.on('request_items_title_desc')
+@cross_origin()
 def request_items_title_desc(data=None):
     """
     Request title and description of a dcat element
@@ -95,6 +99,7 @@ def request_items_title_desc(data=None):
 
 
 @SOCKETIO.on('request_label')
+@cross_origin()
 def request_label(data=None):
     """
     Request title for a field label
@@ -118,6 +123,7 @@ def request_label(data=None):
 
 
 @SOCKETIO.on('request_items_detail')
+@cross_origin()
 def request_items_detail(data=None):
     """
     Request items detail as rdf ttl

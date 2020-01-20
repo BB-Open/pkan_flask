@@ -8,6 +8,7 @@ name = "pypi"
 [packages]
 Flask = "==1.0.3"
 Flask-SocketIO = "==4.0.0"
+flask-cors = "*"
 eventlet = "==0.25.0"
 gunicorn = "==19.9.0"
 simplejson = "==3.16.0"

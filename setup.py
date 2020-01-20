@@ -16,6 +16,7 @@ setup(
     install_requires = [
         'Flask',
         'flask-socketio',
+        'flask-cors',
         'eventlet',
         'gunicorn',
         'simplejson',

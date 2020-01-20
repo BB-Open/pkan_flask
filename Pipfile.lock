@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8730381778acdf0868a0d41a6d6f16842f0d6b398c3ecadd5df9a6dff2ba0d97"
+            "sha256": "0d99c7bc859e1c4d0255011807933e07f1ba2c60471148b3dd40db4ec5f1345b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -74,6 +74,14 @@
             ],
             "index": "pypi",
             "version": "==1.0.3"
+        },
+        "flask-cors": {
+            "hashes": [
+                "sha256:72170423eb4612f0847318afff8c247b38bd516b7737adfc10d1c2cdbb382d16",
+                "sha256:f4d97201660e6bbcff2d89d082b5b6d31abee04b1b3003ee073a6fd25ad1d69a"
+            ],
+            "index": "pypi",
+            "version": "==3.0.8"
         },
         "flask-socketio": {
             "hashes": [
@@ -192,7 +200,8 @@
         },
         "pkan.blazegraph": {
             "editable": true,
-            "git": "https://github.com/BB-Open/pkan.blazegraph.git"
+            "git": "https://github.com/BB-Open/pkan.blazegraph.git",
+            "ref": "5f76f610d3a9f0366bb8d7fa1eaec54189650b22"
         },
         "pycodestyle": {
             "hashes": [
