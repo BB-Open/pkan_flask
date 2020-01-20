@@ -13,10 +13,8 @@ gunicorn = "==19.9.0"
 simplejson = "==3.16.0"
 colorlog = "==4.0.2"
 rdflib = "==4.2.2"
+'pkan.blazegraph' = {git = "https://github.com/BB-Open/pkan.blazegraph.git", editable = true}
 
 [requires]
 python_version = "3.7"
 
-[packages.e1839a8]
-path = "."
-editable = true

@@ -21,6 +21,10 @@ setup(
         'simplejson',
         'colorlog',
         'rdflib',
-        'pkan.blazegraph',
+        'pkan.blazegraph-0.1.dev0',
     ],
+
+    dependency_links = [
+            'https://github.com/BB-Open/pkan.blazegraph.git#egg=pkan.blazegraph-0.1.dev0'
+                ],
 )

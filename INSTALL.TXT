@@ -5,7 +5,7 @@ Development:
 *   Download the sourcecode
 $ git clone  https://github.com/BB-Open/pkan_flask.git
 $ cd pkan_flask
-$ pipenv install --python=3 '-e .'
+$ pipenv install --python=3
 
 Production:
 
