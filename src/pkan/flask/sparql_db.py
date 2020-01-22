@@ -1,12 +1,16 @@
 """
 DB Manager for Sparql Queries
 """
-from pkan.flask.configs.config_default import BATCH_SIZE, PLONE_DCAT_NAMESPACE, PLONE_SKOS_CONCEPT_NAMESPACE, \
-    PLONE_ALL_OBJECTS_NAMESPACE, TITLE_PREFIXES, TITLE_FIELDS, DESCRIPTION_PREFIXES, DESCRIPTION_FIELDS, \
-    TRANSLATION_SPARQL_QUERY_RAW, LABEL_PREFIXES, LABEL_FIELDS
+from pkan.flask.configs.config_default import (
+    BATCH_SIZE, PLONE_DCAT_NAMESPACE,
+    PLONE_SKOS_CONCEPT_NAMESPACE,
+    PLONE_ALL_OBJECTS_NAMESPACE, TITLE_PREFIXES, TITLE_FIELDS,
+    DESCRIPTION_PREFIXES, DESCRIPTION_FIELDS,
+    TITLE_QUERY_LANG, LABEL_PREFIXES, LABEL_FIELDS, TITLE_QUERY,
+    BLAZEGRAPH_BASE, )
 from pkan.flask.log import LOGGER
 
-from pkan.blazegraph.api import tripel_store
+from pkan.blazegraph.api import Tripelstore, SPARQL
 
 
 class DBManager():
@@ -18,6 +22,8 @@ class DBManager():
         """
         Init
         """
+        self.tripel_store = Tripelstore(BLAZEGRAPH_BASE)
+        self.tripel_store.generate_namespace_uri('govdata')
 
     def get_category_vocab(self):
         """
@@ -38,7 +44,7 @@ class DBManager():
             }
         """
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_SKOS_CONCEPT_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_SKOS_CONCEPT_NAMESPACE)
         res = sparql.query(sparql_query)
 
         data = []
@@ -80,7 +86,7 @@ class DBManager():
             }
         """
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
         res = sparql.query(sparql_query)
 
         data = []
@@ -120,7 +126,7 @@ class DBManager():
             }
                 """
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
         res = sparql.query(sparql_query)
 
         data = []
@@ -160,7 +166,7 @@ class DBManager():
             }
         """
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_DCAT_NAMESPACE)
         res = sparql.query(sparql_query)
 
         data = []
@@ -243,35 +249,95 @@ class DBManager():
         :return:
         """
 
-        # todo
+        query = ''
 
-        _sorting = self.sorting_option_to_sparql(params)
-        _categorie = self.category_id_to_sparql(params)
+        # Namespaces
 
-        ids = [
-            'https://datenadler.de/kataloge/mik/dcat_catalog',
-            'https://datenadler.de/kataloge/mik/dcat_catalog/kommunalverzeichnis-land-brandenburg'
-        ]
-        ids = ids * 80
-        ids.append('http://publications.europa.eu/resource/authority/data-theme/GOVE')
+        namespaces = """
+prefix dcat: <http://www.w3.org/ns/dcat#>
+prefix dct: <http://purl.org/dc/terms/>"""
+        query += namespaces
 
-        batch_start = params['batch_start']
-        batch_end = params['batch_end']
-        ids_displayed = ids[batch_start * BATCH_SIZE:batch_end * BATCH_SIZE]
+        # SELECT
+        select = """
+SELECT ?dataset ?date"""
+        query += select
+
+        # WHERE
+        where = """
+WHERE {"""
+        query += where
+
+        # WHERE TYPE
+        where_type = """
+    ?dataset a dcat:Dataset ."""
+
+        query += where_type
+
+        # FILTER for Category
+        where_category = """
+    ?dataset dcat:theme <{category}> ."""
+
+        if 'category' in params:
+            if len(params['category']['value_pos']) == 1 :
+                query += where_category.format(
+                        category = params['category']['value_pos'][0]
+                )
+
+        # WHERE Date
+        where_date = """
+    ?dataset dct:modified ?date . """
+        query += where_date
+
+        # WHERE_END
+        where_end = """
+}"""
+        query += where_end
+
+        # ORDER BY (date)
+        default_order_by = """
+ORDER BY (?date)"""
+        order_by = """
+ORDER BY {order}(?date)"""
+
+        if params['order_by']:
+            query += order_by
+        else :
+            query += default_order_by
+
+        # BATCHING
+        limit = """
+LIMIT {limit}
+OFFSET {offset}
+"""
+        batch_start = params['batch_start'] * BATCH_SIZE
+        batch_end = params['batch_end'] * BATCH_SIZE
+
+        query += limit.format(
+               limit = batch_end - batch_start + 1,
+               offset = batch_start
+        )
+
+        print(query)
+
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
+
+        res = sparql.query(query)
 
         data = []
 
-        for obj_id in ids_displayed:
+        for obj in res.bindings:
+            obj_uri = obj['dataset'].value
             data.append({
-                'id': obj_id,
-                'title': self.get_title(obj_id),
-                'description': self.get_description(obj_id),
-                'type': self.get_type(obj_id)
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri),
+                'type': self.get_type(obj_uri)
             })
 
         LOGGER.info(data)
 
-        return data, len(ids)
+        return data, len(res.bindings)
 
     def get_title(self, obj_uri):
         """
@@ -284,9 +350,9 @@ class DBManager():
 
         fields = '|'.join(TITLE_FIELDS)
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query = TRANSLATION_SPARQL_QUERY_RAW.format(
+        sparql_query = TITLE_QUERY_LANG.format(
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
@@ -294,10 +360,20 @@ class DBManager():
 
         res = sparql.query(sparql_query)
 
-        if res.bindings:
+        if len(res.bindings) > 0:
             title = res.bindings[0]['title'].value
         else:
-            title = obj_uri
+            sparql_query = TITLE_QUERY.format(
+                    uri=obj_uri,
+                    prefix=prefixes,
+                    fields=fields,
+                    lang='de')
+
+            res = sparql.query(sparql_query)
+            if len(res.bindings) > 0:
+                title = res.bindings[0]['title'].value
+            else:
+                title = obj_uri
 
         return title
 
@@ -312,9 +388,9 @@ class DBManager():
 
         fields = '|'.join(DESCRIPTION_FIELDS)
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query = TRANSLATION_SPARQL_QUERY_RAW.format(
+        sparql_query = TITLE_QUERY_LANG.format(
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
@@ -322,10 +398,20 @@ class DBManager():
 
         res = sparql.query(sparql_query)
 
-        if res.bindings:
+        if len(res.bindings) > 0:
             desc = res.bindings[0]['title'].value
         else:
-            desc = ''
+            sparql_query = TITLE_QUERY.format(
+            uri=obj_uri,
+            prefix=prefixes,
+            fields=fields,
+            lang='de')
+
+            res = sparql.query(sparql_query)
+            if len(res.bindings) > 0:
+                desc = res.bindings[0]['title'].value
+            else:
+                desc = ''
 
         return desc
 
@@ -335,7 +421,7 @@ class DBManager():
         :param obj_uri:
         :return:
         """
-        sparql = tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
 
         sparql_query = """
                     PREFIX dct:<http://purl.org/dc/terms/>
@@ -348,7 +434,7 @@ class DBManager():
 
         res = sparql.query(sparql_query)
 
-        if res.bindings:
+        if len(res.bindings) > 0:
             type = res.bindings[0]['type'].value
             type_label = self.get_field_label(type)
         else:
@@ -365,27 +451,27 @@ class DBManager():
 
         # todo: not tested yet
 
-        sparql_query = TRANSLATION_SPARQL_QUERY_RAW
+        sparql_query = TITLE_QUERY_LANG
 
         prefixes = 'PREFIX ' + '\nPREFIX '.join(LABEL_PREFIXES)
 
         fields = '|'.join(LABEL_FIELDS)
 
-        sparql = tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query_de = TRANSLATION_SPARQL_QUERY_RAW.format(
+        sparql_query_de = TITLE_QUERY_LANG.format(
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
             lang='de')
-        
+
         res_de = sparql.query(sparql_query_de)
 
         if res_de.bindings:
             label = res_de.bindings[0]['title'].value
             return label
 
-        sparql_query_en = TRANSLATION_SPARQL_QUERY_RAW.format(
+        sparql_query_en = TITLE_QUERY_LANG.format(
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
@@ -408,7 +494,7 @@ class DBManager():
         # todo: real query
         query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
-        data = tripel_store.get_turtle_from_query(PLONE_ALL_OBJECTS_NAMESPACE, query)
+        data = self.tripel_store.get_turtle_from_query(PLONE_ALL_OBJECTS_NAMESPACE, query)
 
         return data
 

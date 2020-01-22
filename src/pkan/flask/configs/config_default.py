@@ -28,7 +28,7 @@ BLAZEGRAPH_BASE = 'http://localhost:9999'
 
 PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
 PLONE_DCAT_NAMESPACE = 'dcat_store'
-PLONE_ALL_OBJECTS_NAMESPACE = 'complete_store'
+PLONE_ALL_OBJECTS_NAMESPACE = 'govdata'
 
 TITLE_FIELDS = [
     'dct:title', 'foaf:name'
@@ -59,11 +59,19 @@ LABEL_PREFIXES = [
     'rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
 ]
 
-TRANSLATION_SPARQL_QUERY_RAW = """
+TITLE_QUERY_LANG = """
                     {prefix}
                     SELECT ?title
                     WHERE {{
                      <{uri}> {fields} ?title.
                      FILTER(lang(?title) = '{lang}')
+                    }}
+                """
+
+TITLE_QUERY = """
+                    {prefix}
+                    SELECT ?title
+                    WHERE {{
+                     <{uri}> {fields} ?title.
                     }}
                 """
