@@ -1,6 +1,8 @@
 """
 DB Manager for Sparql Queries
 """
+from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
+
 try:
     import pkan.flask.configs.config as cfg
 except ImportError:
@@ -292,8 +294,6 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         query += '''
                     bind( 0.7 as ?default_score)'''
 
-        # todo: how to deal with sparql
-
         # WHERE_END
         where_end = """
         }"""
@@ -381,8 +381,6 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         query += '''
             bind( 0.8 as ?default_score)'''
 
-        # todo: how to deal with sparql
-
         # WHERE_END
         where_end = """
         }"""
@@ -414,7 +412,6 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         query += '} UNION {'
 
-        # todo: replace by catalog if implemented
         query += self.get_search_results_catalog(params, values)
 
         query += '}'
@@ -636,3 +633,53 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         # todo
 
         return file_path, file_name
+
+    def get_search_results_sparql(self, params):
+        data = []
+
+        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+
+        query = params['sparql']
+
+        # BATCHING
+        limit = """
+                        LIMIT {limit}
+                        OFFSET {offset}
+                        """
+        batch_start = params['batch_start'] * cfg.BATCH_SIZE
+        batch_end = params['batch_end'] * cfg.BATCH_SIZE
+
+        # we need this to know how many pages of results we have
+        try:
+            all_res = sparql.query(query)
+        except QueryBadFormed:
+            error = 'Das Statement konnte nicht ausgeführt werden: Query Bad Formed.'
+            return data, 0, error
+
+
+        query += limit.format(
+            limit=batch_end - batch_start + 1,
+            offset=batch_start
+        )
+        try:
+            res = sparql.query(query)
+        except QueryBadFormed:
+            error = 'Limit und Offset konnten nicht angehängt werden: Query Bad Formed.'
+            return data, 0, error
+
+        LOGGER.info('Execute Sparql')
+        LOGGER.info(query)
+
+
+        for obj in res.bindings:
+            obj_uri = obj['id'].value
+            data.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri),
+                'type': self.get_type(obj_uri)
+            })
+
+        LOGGER.info(data)
+
+        return data, len(all_res.bindings), None

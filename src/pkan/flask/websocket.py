@@ -74,6 +74,28 @@ def request_search_results(data=None):
     LOGGER.info('request_search_results finished')
     emit(namespace, sj.dumps(data))
 
+@SOCKETIO.on('request_search_results_sparql')
+def request_search_results_sparql(data=None):
+    """
+    Request results of current search
+    :param data:
+    :return:
+    """
+    LOGGER.info('request_search_results_sparql')
+    params = data['params']
+    namespace = data['namespace']
+    transaction_id = data['transaction_id']
+    LOGGER.info(params)
+    data = {}
+    data['results'], data['number_results'], data['error'] = DB_MANAGER.get_search_results_sparql(params)
+    if data['error']:
+        LOGGER.info(data['error'])
+    data['batch_start'] = params['batch_start']
+    data['batch_end'] = params['batch_end']
+    data['transaction_id'] = transaction_id
+    LOGGER.info('request_search_results_sparql finished')
+    emit(namespace, sj.dumps(data))
+
 
 @SOCKETIO.on('request_items_title_desc')
 def request_items_title_desc(data=None):
