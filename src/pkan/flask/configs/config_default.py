@@ -75,3 +75,8 @@ TITLE_QUERY = """
                      <{uri}> {fields} ?title.
                     }}
                 """
+
+BAD_REQUEST = 400
+INTERNAL_SERVER_ERROR = 500
+INTERNAL_SERVER_ERROR_MSG = 'Es gab einen internen Serverfehler. Versuchen Sie die Seite neu zu laden oder wenden Sie sich an den Admin der Seite'
+REQUEST_OK = 200
