@@ -1,6 +1,8 @@
 """
 DB Manager for Sparql Queries
 """
+import tempfile
+
 from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
 
 try:
@@ -9,7 +11,7 @@ except ImportError:
     import pkan.flask.configs.config_default as cfg
 from pkan.flask.log import LOGGER
 
-from pkan.blazegraph.api import Tripelstore, SPARQL
+from pkan.blazegraph.api import Tripelstore
 
 
 class DBManager():
@@ -158,7 +160,6 @@ class DBManager():
         Get a Vocab with the Sorting Options like Newest
         :return:
         """
-        # todo: which options are suported?
         return [
             {'text': 'Relevanz',
              'id': 'score_desc',
@@ -576,9 +577,6 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         :param label_uri:
         :return:
         """
-
-        # todo: not tested yet
-
         sparql_query = cfg.TITLE_QUERY_LANG
 
         prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.LABEL_PREFIXES)
@@ -613,26 +611,70 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         return label_uri
 
-    def get_items_detail(self, _obj_id):
+    def get_items_detail(self, obj_id):
         """
         Get details of an item for detail view
-        :param _obj_id:
+        :param obj_id:
         :return:
         """
-        # todo: real query
-        query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
+        query = "CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + "> )}"
+
+        # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
         data = self.tripel_store.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query)
 
         return data
 
     def get_download_file(self, params):
-        file_path = 'test_data/test.txt'
-        file_name = 'test.txt'
+        file = tempfile.NamedTemporaryFile()
 
-        # todo
+        file_name = file.name
 
-        return file_path, file_name
+        download_name = 'sparql_download'
+        if params['format'] == 'rdf/json':
+            download_name += '.json'
+            mime_type = 'application/ld+json'
+        elif params['format'] == 'rdf/ttl':
+            download_name += '.ttl'
+            mime_type = 'text/turtle'
+        else:
+            download_name += '.rdf'
+            mime_type = 'application/rdf+xml'
+
+        LOGGER.info("Use temporary file")
+        LOGGER.info(file_name)
+
+        if params['id']:
+            obj_id = params['id']
+            type = params['type']
+            if type == 'tree':
+                # we take a high bound to get all children
+                upperBound = 1000
+                filter = "?s = ?to || ?s = <" + obj_id + ">"
+                bidirectional = 'false'
+            else:
+                # type graph
+                upperBound = params['count']
+                filter = "?s = ?to || ?s = <" + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + ">"
+                bidirectional = 'true'
+            query = '''CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. 
+            SERVICE bd:alp { <''' + obj_id + '''> ?edge ?to . 
+ hint:Prior hint:alp.pathExpr true .
+ hint:Group hint:alp.lowerBound 1 .
+ hint:Group hint:alp.upperBound ''' + str(upperBound) + ''' .
+ hint:Group hint:alp.bidirectional ''' + bidirectional + ''' .
+    }
+         FILTER(''' + filter + ''')
+ }'''
+            LOGGER.info(query)
+            data = self.tripel_store.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type)
+        else:
+            query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
+            data = self.tripel_store.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type)
+        file.write(data)
+        file.flush()
+
+        return file_name, download_name, file, mime_type
 
     def get_search_results_sparql(self, params):
         data = []
