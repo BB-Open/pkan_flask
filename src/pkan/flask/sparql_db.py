@@ -641,6 +641,11 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         query = params['sparql']
 
+        for word in cfg.FORBIDDEN_SPARQL_KEYWORDS:
+            if word.lower() in query.lower():
+                error = 'Das Statement konnte nicht ausgeführt werden. Sie benutzen ein verbotenes Keyword: ' + word.lower()
+                return data, 0, error
+
         # BATCHING
         limit = """
                         LIMIT {limit}
