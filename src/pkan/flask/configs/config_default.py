@@ -28,7 +28,7 @@ BLAZEGRAPH_BASE = 'http://localhost:9999'
 
 PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
 PLONE_DCAT_NAMESPACE = 'dcat_store'
-PLONE_ALL_OBJECTS_NAMESPACE = 'govdata'
+PLONE_ALL_OBJECTS_NAMESPACE = 'complete_store'
 
 TITLE_FIELDS = [
     'dct:title', 'foaf:name'
@@ -75,3 +75,10 @@ TITLE_QUERY = """
                      <{uri}> {fields} ?title.
                     }}
                 """
+
+BAD_REQUEST = 400
+INTERNAL_SERVER_ERROR = 500
+INTERNAL_SERVER_ERROR_MSG = 'Es gab einen internen Serverfehler. Versuchen Sie die Seite neu zu laden oder wenden Sie sich an den Admin der Seite'
+REQUEST_OK = 200
+
+FORBIDDEN_SPARQL_KEYWORDS = ['modify', 'delete', 'insert', 'clear', 'drop', 'create', 'update']

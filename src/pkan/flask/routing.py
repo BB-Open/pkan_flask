@@ -11,8 +11,8 @@ def return_files_tut():
     params['type'] = request.args.get('type', default='tree', type=str)
     # ignore on type tree, use on type graph
     params['count'] = request.args.get('count', default='3', type=int)
-    file_path, file_name = DB_MANAGER.get_download_file(params)
+    file_path, file_name, file, mimetype = DB_MANAGER.get_download_file(params)
     try:
-        return send_file(file_path, attachment_filename=file_name)
+        return send_file(file_path, attachment_filename=file_name, mimetype=mimetype)
     except Exception as e:
         return str(e)
