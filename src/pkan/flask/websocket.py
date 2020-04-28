@@ -4,11 +4,11 @@
 import functools
 import sys
 import traceback
-from functools import partial
+
+
 
 import simplejson as sj
-from flask import Flask
-from flask_socketio import SocketIO, emit
+from flask import Flask, request, jsonify
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
@@ -24,7 +24,9 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 
 app = Flask(__name__)
 
-SOCKETIO = SocketIO(app, cors_allowed_origins="*")
+# SOCKETIO = SocketIO(app, cors_allowed_origins="*")
+
+SOCKETIO = app
 
 DB_MANAGER = DBManager()
 
@@ -32,9 +34,7 @@ DB_MANAGER = DBManager()
 def pkan_status(f):
     @functools.wraps(f)
     def wrapped(data=None):
-        namespace = data['namespace']
         res_data = {}
-        res_data['transaction_id'] = data['transaction_id']
         res_data['response_code'] = cfg.REQUEST_OK
         res_data['error_message'] = ''
         try:
@@ -46,13 +46,12 @@ def pkan_status(f):
             LOGGER.error("Request failed with Error %s %s " % (exc_type, exc_value))
             for line in traceback.format_tb(exc_traceback):
                 LOGGER.error("%s" % (line[:-1]))
-        emit(namespace, sj.dumps(res_data))
+        return(sj.dumps(res_data))
     return wrapped
 
 # DATA OBJECTS
 
-@SOCKETIO.on('request_vocab')
-@pkan_status
+@app.route('/request_vocab', methods=['POST'])
 def request_vocab(data=None):
     """
     Request a vocabulary for selecting in frontend
@@ -60,7 +59,7 @@ def request_vocab(data=None):
     :return:
     """
     LOGGER.info('request_vocab')
-    params = data['params']
+    params = sj.loads(request.data)
     LOGGER.info(params)
     data = {}
 
@@ -77,11 +76,10 @@ def request_vocab(data=None):
     else:
         data['vocab'] = DB_MANAGER.get_sorting_options()
     LOGGER.info('request_vocab finished')
-    return data
+    return jsonify(data)
 
 
-@SOCKETIO.on('request_search_results')
-@pkan_status
+@app.route('/request_search_results', methods=['POST'])
 def request_search_results(data=None):
     """
     Request results of current search
@@ -89,8 +87,8 @@ def request_search_results(data=None):
     :return:
     """
     LOGGER.info('request_search_results')
-    params = data['params']
-    
+    params = sj.loads(request.data)
+
     LOGGER.info(params)
     data = {}
     data['results'], data['number_results'] = DB_MANAGER.get_search_results(params)
@@ -99,8 +97,7 @@ def request_search_results(data=None):
     LOGGER.info('request_search_results finished')
     return data
 
-@SOCKETIO.on('request_search_results_sparql')
-@pkan_status
+@app.route('/request_search_results_sparql', methods=['POST'])
 def request_search_results_sparql(data=None):
     """
     Request results of current search
@@ -108,8 +105,8 @@ def request_search_results_sparql(data=None):
     :return:
     """
     LOGGER.info('request_search_results_sparql')
-    params = data['params']
-    
+    params = sj.loads(request.data)
+
     LOGGER.info(params)
     data = {}
     data['results'], data['number_results'], data['error_message'] = DB_MANAGER.get_search_results_sparql(params)
@@ -122,8 +119,7 @@ def request_search_results_sparql(data=None):
     return data
 
 
-@SOCKETIO.on('request_items_title_desc')
-@pkan_status
+@app.route('/request_items_title_desc', methods=['POST'])
 def request_items_title_desc(data=None):
     """
     Request title and description of a dcat element
@@ -131,7 +127,7 @@ def request_items_title_desc(data=None):
     :return:
     """
     LOGGER.info('request_items_title_desc')
-    params = data['params']
+    params = sj.loads(request.data)
 
     LOGGER.info(params)
     data = {}
@@ -144,8 +140,7 @@ def request_items_title_desc(data=None):
     return data
 
 
-@SOCKETIO.on('request_label')
-@pkan_status
+@app.route('/request_label', methods=['POST'])
 def request_label(data=None):
     """
     Request title for a field label
@@ -153,7 +148,7 @@ def request_label(data=None):
     :return:
     """
     LOGGER.info('request label')
-    params = data['params']
+    params = sj.loads(request.data)
 
     LOGGER.info(params)
     data = {}
@@ -166,8 +161,7 @@ def request_label(data=None):
     return data
 
 
-@SOCKETIO.on('request_items_detail')
-@pkan_status
+@app.route('/request_items_detail', methods=['POST'])
 def request_items_detail(data=None):
     """
     Request items detail as rdf ttl
@@ -175,7 +169,7 @@ def request_items_detail(data=None):
     :return:
     """
     LOGGER.info('request_items_detail')
-    params = data['params']
+    params = sj.loads(request.data)
 
     LOGGER.info(params)
     data = {}
