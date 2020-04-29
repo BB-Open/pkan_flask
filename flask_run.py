@@ -9,8 +9,8 @@ from pkan.flask.websocket import (
 # need import for routing
 import pkan.flask.routing
 
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 if __name__ == '__main__':
 #    SOCKETIO.run(app, debug=True)
-    cors = CORS(app, resources={r"*": {"origins": "*"}})
     app.run()
