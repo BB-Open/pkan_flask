@@ -5,10 +5,11 @@ import functools
 import sys
 import traceback
 
-
+from flask import send_file
 
 import simplejson as sj
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
@@ -25,6 +26,8 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 app = Flask(__name__)
 
 # SOCKETIO = SocketIO(app, cors_allowed_origins="*")
+
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 SOCKETIO = app
 
@@ -48,6 +51,23 @@ def pkan_status(f):
                 LOGGER.error("%s" % (line[:-1]))
         return(sj.dumps(res_data))
     return wrapped
+
+# Download
+
+@app.route('/download')
+def return_files_tut():
+    params = {}
+    # id empty means full export
+    params['id'] = request.args.get('id', default=None, type=str)
+    params['format'] = request.args.get('format', default='rdf/xml', type=str)
+    params['type'] = request.args.get('type', default='tree', type=str)
+    # ignore on type tree, use on type graph
+    params['count'] = request.args.get('count', default='3', type=int)
+    file_path, file_name, file, mimetype = DB_MANAGER.get_download_file(params)
+    try:
+        return send_file(file_path, attachment_filename=file_name, mimetype=mimetype)
+    except Exception as e:
+        return str(e)
 
 # DATA OBJECTS
 
