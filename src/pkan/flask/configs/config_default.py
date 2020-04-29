@@ -27,7 +27,7 @@ BATCH_SIZE = 10
 BLAZEGRAPH_BASE = 'http://localhost:9999'
 
 PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
-PLONE_DCAT_NAMESPACE = 'govdata'
+PLONE_DCAT_NAMESPACE = 'dcat_store'
 PLONE_ALL_OBJECTS_NAMESPACE = 'complete_store'
 
 TITLE_FIELDS = [
