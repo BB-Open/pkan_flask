@@ -111,7 +111,7 @@ def request_search_results(data=None):
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
     LOGGER.info('request_search_results finished')
-    return data
+    return jsonify(data)
 
 @app.route('/request_search_results_sparql', methods=['POST'])
 def request_search_results_sparql(data=None):
@@ -132,7 +132,7 @@ def request_search_results_sparql(data=None):
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
     LOGGER.info('request_search_results_sparql finished')
-    return data
+    return jsonify(data)
 
 
 @app.route('/request_items_title_desc', methods=['POST'])
@@ -153,7 +153,7 @@ def request_items_title_desc(data=None):
     data['type'] = DB_MANAGER.get_type(obj_id)
     data['id'] = obj_id
     LOGGER.info('request_items_title_desc finished')
-    return data
+    return jsonify(data)
 
 
 @app.route('/request_label', methods=['POST'])
@@ -174,7 +174,7 @@ def request_label(data=None):
     data['label'] = DB_MANAGER.get_field_label(obj_id)
     data['id'] = obj_id
     LOGGER.info('request label finished')
-    return data
+    return jsonify(data)
 
 
 @app.route('/request_items_detail', methods=['POST'])
@@ -191,4 +191,4 @@ def request_items_detail(data=None):
     data = {}
     data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
     LOGGER.info('request_items_detail finished')
-    return data
+    return jsonify(data)
