@@ -4,7 +4,7 @@
 import functools
 import sys
 import traceback
-
+from flask_cors import CORS
 
 
 import simplejson as sj
@@ -24,9 +24,7 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 
 app = Flask(__name__)
 
-# SOCKETIO = SocketIO(app, cors_allowed_origins="*")
-
-SOCKETIO = app
+CORS(app, resources={r"*": {"origins": "*"}})
 
 DB_MANAGER = DBManager()
 
