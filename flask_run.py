@@ -2,10 +2,11 @@
 """Simple Flask bases websocket demo."""
 
 # Initialize Flask.
+<<<<<<< HEAD
 from pkan.flask.websocket import app
 # need import for routing
 import pkan.flask.routing
+from pkan.flask.routes import app
 
 if __name__ == '__main__':
-#    SOCKETIO.run(app, debug=True)
     app.run()
