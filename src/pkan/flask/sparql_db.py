@@ -271,7 +271,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             if 'file_format_neg' in values:
                 filters += """
             FILTER(NOT EXISTS { ?distribution dct:license ?file_format_neg . })"""
-        
+
         if 'category' in values:
             if 'category_pos' in values:
                 filters += """
@@ -301,7 +301,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         query += where_end
 
         return query
-    
+
     def get_search_results_catalog(self, params, values):
         query = ''
         # params example
@@ -705,7 +705,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
 
         query += limit.format(
-            limit=batch_end - batch_start + 1,
+            limit=batch_end - batch_start,
             offset=batch_start
         )
         try:
@@ -716,7 +716,6 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         LOGGER.info('Execute Sparql')
         LOGGER.info(query)
-
 
         for obj in res.bindings:
             obj_uri = obj['id'].value

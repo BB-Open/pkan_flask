@@ -74,7 +74,7 @@ def request_vocab(data=None):
     :param data:
     :return:
     """
-    LOGGER.info('request_vocab')
+    LOGGER.info('request')
     params = sj.loads(request.data)
     LOGGER.info(params)
     data = {}
@@ -91,7 +91,8 @@ def request_vocab(data=None):
         data['vocab'] = DB_MANAGER.get_publisher_vocab()
     else:
         data['vocab'] = DB_MANAGER.get_sorting_options()
-    LOGGER.info('request_vocab finished')
+    LOGGER.info('request %s finished' % params)
+    LOGGER.info('response is %s ' % data)
     return jsonify(data)
 
 
@@ -107,7 +108,7 @@ def request_search_results(data=None):
 
     LOGGER.info(params)
     data = {}
-    data['results'], data['number_results'] = DB_MANAGER.get_search_results(params)
+    data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
     LOGGER.info('request_search_results finished')
@@ -125,7 +126,7 @@ def request_search_results_sparql(data=None):
 
     LOGGER.info(params)
     data = {}
-    data['results'], data['number_results'], data['error_message'] = DB_MANAGER.get_search_results_sparql(params)
+    data['results'], data['result_count'], data['error_message'] = DB_MANAGER.get_search_results_sparql(params)
     if data['error_message']:
         LOGGER.info(data['error_message'])
         data['response_code'] = cfg.BAD_REQUEST
