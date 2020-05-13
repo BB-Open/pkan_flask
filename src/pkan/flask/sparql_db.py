@@ -201,19 +201,30 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         return namespaces
 
     def get_values(self, params):
-        #  'order_by': 'date_asc', 'sparql': '', 'batch_start': 0, 'batch_end': 1, 'last_change': ['2020-01-02T13:35:00.000Z', '2020-01-04T13:35:00.000Z']}
+        #  'order_by': 'date_asc', 'sparql': '', 'batch_start': 0, 'batch_end': 1, 'search_date_period': ['2020-01-02T13:35:00.000Z', '2020-01-04T13:35:00.000Z']}
+
+        EXCLUDE = -1
+        NEUTRAL = 0
+        INCLUDE = 1
+
         query = ''
 
         neg_pos_fields = ['file_format', 'category', 'publisher', 'license']
 
         for field in neg_pos_fields:
-            if params[field]:
-                if params[field]['value_pos']:
-                    values = '<' + '> <'.join(params[field]['value_pos']) + '>'
-                    query += '\nVALUES ?' + field + '_pos {' + values + '} .'
-                if params[field]['value_neg']:
-                    values = '<' + '> <'.join(params[field]['value_neg']) + '>'
-                    query += '\nVALUES ?' + field + '_neg {' + values + '} .'
+            includes = []
+            excludes = []
+            for param, value in params[field].items():
+                if value == INCLUDE:
+                    includes.append(param)
+                elif value == EXCLUDE:
+                    excludes.append(param)
+            if includes :
+                values = '<' + '> <'.join(includes) + '>'
+                query += '\nVALUES ?' + field + '_pos {' + values + '} .'
+            if excludes:
+                values = '<' + '> <'.join(excludes) + '>'
+                query += '\nVALUES ?' + field + '_neg {' + values + '} .'
 
         return query
 
@@ -280,8 +291,8 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
                 filters += """
                 FILTER(NOT EXISTS { ?id dcat:theme ?category_neg . })"""
 
-        if params['last_change']:
-            start, end = params['last_change']
+        if 'search_date_period' in params and params['search_date_period']:
+            start, end = params['search_date_period']
             if start:
                 filters += '''
             FILTER(?date >= "''' + start + '''"^^xsd:dateTime )'''
@@ -367,8 +378,8 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
                 filters += """
                 FILTER(NOT EXISTS { ?dataset dcat:theme ?category_neg . })"""
 
-        if params['last_change']:
-            start, end = params['last_change']
+        if params['search_date_period']:
+            start, end = params['search_date_period']
             if start:
                 filters += '''
             FILTER(?date >= "''' + start + '''"^^xsd:dateTime )'''
@@ -419,13 +430,16 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         # KEYWORDS
 
-        if params['textline_keywords']:
+        if params['search_phrase']:
+#            query += '''
+#            ?o bds:search "''' + params['search_phrase'] + '''" .
+#            ?o bds:relevance ?score .
+#            ?o bds:matchAllTerms "false" .
+#          	?o bds:minRelevance "0.25" .
+#            ?id ?p ?o .'''
+
             query += '''
-            ?o bds:search "''' + params['textline_keywords'] + '''" .
-            ?o bds:relevance ?score .
-            ?o bds:matchAllTerms "false" .
-          	?o bds:minRelevance "0.25" .
-            ?id ?p ?o .'''
+            FILTER regex(?o, ".*''' + params['search_phrase'] + '''.*", "i")'''
 
         query += '}'
 

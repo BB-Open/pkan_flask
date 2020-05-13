@@ -108,10 +108,19 @@ def request_search_results(data=None):
 
     LOGGER.info(params)
     data = {}
-    data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
+    try:
+        data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
+    except Exception as e:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        LOGGER.error("Failed with Error %s %s " % (
+            exc_type, exc_value))
+        for line in traceback.format_tb(exc_traceback):
+            LOGGER.error("Trace: %s" % (line[:-1]))
+        # ToDo: Fix unspecified Exception catch
+        data['results'], data['result_count'] = [], 0
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
-    LOGGER.info('request_search_results finished')
+    LOGGER.info('request_search_results finished: %s ' % data)
     return jsonify(data)
 
 @app.route('/request_search_results_sparql', methods=['POST'])
