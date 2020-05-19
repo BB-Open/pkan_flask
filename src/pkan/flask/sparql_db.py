@@ -457,7 +457,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         batch_end = params['batch_end'] * cfg.BATCH_SIZE
 
         query += limit.format(
-            limit=batch_end - batch_start + 1,
+            limit=batch_end - batch_start,
             offset=batch_start
         )
 
