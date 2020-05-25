@@ -418,7 +418,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # SELECT
 
         query +="""
-SELECT DISTINCT ?id ?date ?title ?score ?default_score (group_concat(DISTINCT ?o) as ?all_fields) WHERE {
+SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 { """
         # SUBQUERIES
 
@@ -428,9 +428,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score (group_concat(DISTINCT ?o
 
         query += self.get_search_results_catalog(params, values)
 
-        query += '}}'
-
-        query += 'GROUP BY ?id ?date ?title ?score ?default_score\n'
+        query += '}'
 
         # KEYWORDS
 
@@ -439,16 +437,16 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score (group_concat(DISTINCT ?o
             search_phrase = params['search_phrase'].split(' ')
             regex = []
             for keyword in search_phrase:
-                regex.append('''regex(?all_fields, ".*''' + keyword + '''.*", "i")''')
+                regex.append('''regex(?o, ".*''' + keyword + '''.*", "i")''')
 
             condition = ' && '.join(regex)
 
             query += '''
-            HAVING(''' + condition + ''' )\n'''
+            FILTER(''' + condition + ''' )\n'''
+
+        query += '}'
 
         query += self.sorting_option_to_sparql(params)
-
-        print(query)
 
         # we need this to know how many pages of results we have
         all_res = sparql.query(query)
