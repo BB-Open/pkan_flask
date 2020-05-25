@@ -431,20 +431,16 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         # KEYWORDS
 
         if params['search_phrase']:
-            print(params['search_phrase'])
-
-            search_params = params['search_phrase'].split(' ')
-
-            search_params = '* '.join(search_params)
-
+#            query += '''
+#            ?o bds:search "''' + params['search_phrase'] + '''" .
+#            ?o bds:relevance ?score .
+#            ?o bds:matchAllTerms "false" .
+#           ?o bds:matchExact "false" .
+#          	?o bds:minRelevance "0.25" .
+#            ?id ?p ?o .'''
 
             query += '''
-            ?o bds:search "''' + search_params + '''*" .
-            ?o bds:relevance ?score .
-            ?o bds:matchAllTerms "false" .
-            ?o bds:matchExact "false" .
-          	?o bds:minRelevance "0.25" .
-            ?id ?p ?o .'''
+            FILTER regex(?o, ".*''' + params['search_phrase'] + '''.*", "i")'''
 
         query += '}'
 
