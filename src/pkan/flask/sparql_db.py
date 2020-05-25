@@ -233,7 +233,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?o"""
         query += select
 
         # WHERE
@@ -247,6 +247,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
 
         # WHERE TYPE
         where_base_fields = """
+            ?id ?p ?o .
             ?id a dcat:Dataset .
             ?id dct:title ?title .
             ?id dct:modified ?date ."""
@@ -318,7 +319,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?o"""
         query += select
 
         # WHERE
@@ -332,6 +333,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
 
         # WHERE TYPE
         where_base_fields = """
+            ?id ?p ?o .
             ?id a dcat:Catalog .
             ?id dct:title ?title .
             ?id dct:modified ?date ."""
@@ -416,7 +418,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # SELECT
 
         query +="""
-SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
+SELECT DISTINCT ?id ?date ?title ?score ?default_score (group_concat(DISTINCT ?o) as ?all_fields) WHERE {
 { """
         # SUBQUERIES
 
@@ -426,25 +428,27 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         query += self.get_search_results_catalog(params, values)
 
-        query += '}'
+        query += '}}'
+
+        query += 'GROUP BY ?id ?date ?title ?score ?default_score\n'
 
         # KEYWORDS
 
         if params['search_phrase']:
-#            query += '''
-#            ?o bds:search "''' + params['search_phrase'] + '''" .
-#            ?o bds:relevance ?score .
-#            ?o bds:matchAllTerms "false" .
-#           ?o bds:matchExact "false" .
-#          	?o bds:minRelevance "0.25" .
-#            ?id ?p ?o .'''
+
+            search_phrase = params['search_phrase'].split(' ')
+            regex = []
+            for keyword in search_phrase:
+                regex.append('''regex(?all_fields, ".*''' + keyword + '''.*", "i")''')
+
+            condition = ' && '.join(regex)
 
             query += '''
-            FILTER regex(?o, ".*''' + params['search_phrase'] + '''.*", "i")'''
-
-        query += '}'
+            HAVING(''' + condition + ''' )\n'''
 
         query += self.sorting_option_to_sparql(params)
+
+        print(query)
 
         # we need this to know how many pages of results we have
         all_res = sparql.query(query)
