@@ -22,7 +22,6 @@ setup(
         'simplejson',
         'colorlog',
         'rdflib',
-        'pkan.blazegraph-0.1.dev0',
     ],
 
     dependency_links = [
