@@ -36,7 +36,7 @@ class DBManager():
             prefix foaf: <http://xmlns.com/foaf/0.1/>
             prefix skos: <http://www.w3.org/2004/02/skos/core#>
             PREFIX dct: <http://purl.org/dc/terms/>
-            SELECT ?s ?css ?title
+            SELECT DISTINCT ?s ?css ?title
             WHERE
             {?s a skos:Concept.
             ?s foaf:depiction?css.
@@ -69,7 +69,7 @@ class DBManager():
         """
         sparql_query = """
             PREFIX dct: <http://purl.org/dc/terms/>
-            SELECT ?s ?title
+            SELECT DISTINCT ?s ?title
             WHERE
             {?s a dct:MediaTypeOrExtent.
              ?s dct:title ?title.
@@ -100,7 +100,7 @@ class DBManager():
         """
         sparql_query = """
             prefix foaf: <http://xmlns.com/foaf/0.1/>
-            SELECT ?s ?title
+            SELECT DISTINCT ?s ?title
             WHERE
             {?s a foaf:Agent.
              ?s foaf:name ?title.
@@ -131,7 +131,7 @@ class DBManager():
         """
         sparql_query = """
             PREFIX dct: <http://purl.org/dc/terms/>
-            SELECT ?s ?title
+            SELECT DISTINCT ?s ?title
             WHERE
             {?s a dct:LicenseDocument.
              ?s dct:title ?title.
@@ -250,7 +250,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             ?id ?p ?o .
             ?id a dcat:Dataset .
             ?id dct:title ?title .
-            ?id dct:modified ?date ."""
+            OPTIONAL {?id dct:modified ?date .}"""
 
         query += where_base_fields
 
@@ -336,7 +336,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             ?id ?p ?o .
             ?id a dcat:Catalog .
             ?id dct:title ?title .
-            ?id dct:modified ?date ."""
+            OPTIONAL {?id dct:modified ?date .}"""
 
         query += where_base_fields
 
