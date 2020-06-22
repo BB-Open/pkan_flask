@@ -188,11 +188,16 @@ class DBManager():
             field, order = params['order_by'].split('_')
         else:
             field, order = 'score', 'desc'
-        order_by = """ORDER BY {order}(?{field})desc(?default_score)""".format(field=field, order=order)
+        order_by = """ORDER BY {order}(?{field})desc(?default_score)""".format(
+            field=field, order=order)
 
         return order_by
 
     def get_namespaces(self):
+        """
+        Sparql namespaces for sparql query
+        :return:
+        """
         namespaces = """
 prefix dcat: <http://www.w3.org/ns/dcat#>
 prefix dct: <http://purl.org/dc/terms/>
@@ -201,10 +206,14 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         return namespaces
 
     def get_values(self, params):
-        #  'order_by': 'date_asc', 'sparql': '', 'batch_start': 0, 'batch_end': 1, 'search_date_period': ['2020-01-02T13:35:00.000Z', '2020-01-04T13:35:00.000Z']}
+        """
+        values for sparql query from our triple state vocabs
+        :param params:
+        :return:
+        """
 
         EXCLUDE = -1
-        NEUTRAL = 0
+        _NEUTRAL = 0
         INCLUDE = 1
 
         query = ''
@@ -219,7 +228,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
                     includes.append(param)
                 elif value == EXCLUDE:
                     excludes.append(param)
-            if includes :
+            if includes:
                 values = '<' + '> <'.join(includes) + '>'
                 query += '\nVALUES ?' + field + '_pos {' + values + '} .'
             if excludes:
@@ -229,6 +238,12 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         return query
 
     def get_search_results_dataset(self, params, values):
+        """
+        sparql-query for datasets
+        :param params:
+        :param values:
+        :return:
+        """
         query = ''
         # params example
 
@@ -315,6 +330,12 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         return query
 
     def get_search_results_catalog(self, params, values):
+        """
+        Sparql-query for catalogs
+        :param params:
+        :param values:
+        :return:
+        """
         query = ''
         # params example
 
@@ -417,7 +438,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
 
         # SELECT
 
-        query +="""
+        query += """
 SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 { """
         # SUBQUERIES
@@ -510,10 +531,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             title = res.bindings[0]['title'].value
         else:
             sparql_query = cfg.TITLE_QUERY.format(
-                    uri=obj_uri,
-                    prefix=prefixes,
-                    fields=fields,
-                    lang='de')
+                uri=obj_uri,
+                prefix=prefixes,
+                fields=fields,
+                lang='de')
 
             res = sparql.query(sparql_query)
             if len(res.bindings) > 0:
@@ -548,10 +569,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             desc = res.bindings[0]['title'].value
         else:
             sparql_query = cfg.TITLE_QUERY.format(
-            uri=obj_uri,
-            prefix=prefixes,
-            fields=fields,
-            lang='de')
+                uri=obj_uri,
+                prefix=prefixes,
+                fields=fields,
+                lang='de')
 
             res = sparql.query(sparql_query)
             if len(res.bindings) > 0:
@@ -581,8 +602,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         res = sparql.query(sparql_query)
 
         if len(res.bindings) > 0:
-            type = res.bindings[0]['type'].value
-            type_label = self.get_field_label(type)
+            res_type = res.bindings[0]['type'].value
+            type_label = self.get_field_label(res_type)
         else:
             type_label = 'Kein Datentyp gefunden'
 
@@ -594,8 +615,6 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         :param label_uri:
         :return:
         """
-        sparql_query = cfg.TITLE_QUERY_LANG
-
         prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.LABEL_PREFIXES)
 
         fields = '|'.join(cfg.LABEL_FIELDS)
@@ -634,7 +653,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         :param obj_id:
         :return:
         """
-        query = "CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + "> )}"
+        query = "CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" \
+                + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + "> )}"
 
         # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
@@ -643,6 +663,11 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         return data
 
     def get_download_file(self, params):
+        """
+        create and return download-file
+        :param params:
+        :return:
+        """
         file = tempfile.NamedTemporaryFile()
 
         file_name = file.name
@@ -663,37 +688,46 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         if params['id']:
             obj_id = params['id']
-            type = params['type']
-            if type == 'tree':
+            export_type = params['type']
+            if export_type == 'tree':
                 # we take a high bound to get all children
                 upperBound = 1000
-                filter = "?s = ?to || ?s = <" + obj_id + ">"
+                sparql_filter = "?s = ?to || ?s = <" + obj_id + ">"
                 bidirectional = 'false'
             else:
                 # type graph
                 upperBound = params['count']
-                filter = "?s = ?to || ?s = <" + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + ">"
+                sparql_filter = "?s = ?to || ?s = <" + obj_id + \
+                                "> || ?p = <" + obj_id + "> || ?o = <" \
+                                + obj_id + ">"
                 bidirectional = 'true'
-            query = '''CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. 
-            SERVICE bd:alp { <''' + obj_id + '''> ?edge ?to . 
+            query = '''CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o.
+            SERVICE bd:alp { <''' + obj_id + '''> ?edge ?to .
  hint:Prior hint:alp.pathExpr true .
  hint:Group hint:alp.lowerBound 1 .
  hint:Group hint:alp.upperBound ''' + str(upperBound) + ''' .
  hint:Group hint:alp.bidirectional ''' + bidirectional + ''' .
     }
-         FILTER(''' + filter + ''')
+         FILTER(''' + sparql_filter + ''')
  }'''
             LOGGER.info(query)
-            data = self.tripel_store.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type)
+            data = self.tripel_store.get_triple_data_from_query(
+                cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type)
         else:
             query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
-            data = self.tripel_store.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type)
+            data = self.tripel_store.get_triple_data_from_query(
+                cfg.PLONE_DCAT_NAMESPACE, query, mime_type)
         file.write(data)
         file.flush()
 
         return file_name, download_name, file, mime_type
 
     def get_search_results_sparql(self, params):
+        """
+        Search in Sparql-Store
+        :param params:
+        :return:
+        """
         data = []
 
         sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
@@ -702,7 +736,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         for word in cfg.FORBIDDEN_SPARQL_KEYWORDS:
             if word.lower() in query.lower():
-                error = 'Das Statement konnte nicht ausgeführt werden. Sie benutzen ein verbotenes Keyword: ' + word.lower()
+                error = 'Das Statement konnte nicht ausgeführt werden. ' \
+                        'Sie benutzen ein verbotenes Keyword: ' + word.lower()
                 return data, 0, error
 
         # BATCHING
