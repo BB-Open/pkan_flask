@@ -22,6 +22,7 @@ setup(
         'simplejson',
         'colorlog',
         'rdflib',
+        'schedule',
     ],
 
     dependency_links = [
