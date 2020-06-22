@@ -10,7 +10,7 @@ install:
   - pip install -r requirements/dev.txt
 
 script:
-  - pylint src/pkan --output-format=text --disable=R,C0103,W0511 # disable Refacturing hints
+  - pylint src/pkan --output-format=text --disable=R,C0103,W0511,W0703,C0325 # disable Refacturing hints
 
 after_success:
   - codecov
