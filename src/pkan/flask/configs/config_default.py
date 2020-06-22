@@ -84,3 +84,10 @@ INTERNAL_SERVER_ERROR_MSG = 'Es gab einen internen Serverfehler. ' \
 REQUEST_OK = 200
 
 FORBIDDEN_SPARQL_KEYWORDS = ['modify', 'delete', 'insert', 'clear', 'drop', 'create', 'update']
+
+# Perodic scheduler for harveting
+HARVEST_URL = 'https://backend.datenadler.de/real_run_cron'
+HARVEST_PERIOD = 120    # seconds
+SCHEDULER_PERIOD = 60   # seconds
+HARVEST_USER = 'XXX'
+HARVEST_PASS = 'XXX'
