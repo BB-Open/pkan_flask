@@ -21,6 +21,7 @@ def plone_harvest():
     response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
     if response.status_code == 200:
         LOGGER.info('Harvesting initiated')
+        LOGGER.info('Harvesting Response is: %s', response)
     else:
         LOGGER.warning('Failed to initiate Harvesting. Error Code: %s', response)
 
