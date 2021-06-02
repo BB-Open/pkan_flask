@@ -3,7 +3,9 @@ DB Manager for Sparql Queries
 """
 import tempfile
 
+import rdflib
 from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
+from rdflib import Literal
 
 try:
     import pkan.flask.configs.config as cfg
@@ -12,6 +14,37 @@ except ImportError:
 from pkan.flask.log import LOGGER
 
 from pkan.blazegraph.api import Tripelstore
+from bs4 import BeautifulSoup
+
+
+def remove_tags(html):
+
+    # parse html content
+    soup = BeautifulSoup(html, "html.parser")
+
+    for data in soup(['style', 'script']):
+        # Remove tags
+        data.decompose()
+
+    # return data by retrieving the tag content
+    return ' '.join(soup.stripped_strings)
+
+
+def remove_tags_turtle(turtle):
+    g = rdflib.Graph()
+    new_g = rdflib.Graph()
+
+    g.parse(data=turtle, format='text/turtle')
+
+    # todo: is there a better way to find and replace Literals?
+    for triple in g:
+        o = triple[2]
+        if isinstance(o, Literal):
+            o = Literal(remove_tags(o.value))
+        new_g.add((triple[0], triple[1], o))
+
+    res = new_g.serialize(format='text/turtle')
+    return res
 
 
 class DBManager():
@@ -41,7 +74,7 @@ class DBManager():
             {?s a skos:Concept.
             ?s foaf:depiction?css.
             ?s dct:title ?title.
-            FILTER(lang(?title) = 'de')
+            FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
             }
         """
 
@@ -55,7 +88,7 @@ class DBManager():
             icon_class = x['css'].value
             title = x['title'].value
             data.append({
-                'text': title,
+                'text': remove_tags(title),
                 'id': uri,
                 'icon_class': icon_class
             })
@@ -73,7 +106,7 @@ class DBManager():
             WHERE
             {?s a dct:MediaTypeOrExtent.
              ?s dct:title ?title.
-             FILTER(lang(?title) = 'de')
+             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
             }
         """
 
@@ -86,7 +119,7 @@ class DBManager():
             uri = x['s'].value
             title = x['title'].value
             data.append({
-                'text': title,
+                'text': remove_tags(title),
                 'id': uri,
                 'icon_class': None
             })
@@ -104,7 +137,7 @@ class DBManager():
             WHERE
             {?s a foaf:Agent.
              ?s foaf:name ?title.
-             FILTER(lang(?title) = 'de')
+             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
             }
                 """
 
@@ -117,7 +150,7 @@ class DBManager():
             uri = x['s'].value
             title = x['title'].value
             data.append({
-                'text': title,
+                'text': remove_tags(title),
                 'id': uri,
                 'icon_class': None
             })
@@ -135,7 +168,7 @@ class DBManager():
             WHERE
             {?s a dct:LicenseDocument.
              ?s dct:title ?title.
-             FILTER(lang(?title) = 'de')
+             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
             }
         """
 
@@ -148,7 +181,7 @@ class DBManager():
             uri = x['s'].value
             title = x['title'].value
             data.append({
-                'text': title,
+                'text': remove_tags(title),
                 'id': uri,
                 'icon_class': None
             })
@@ -497,7 +530,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             obj_title = obj['title'].value
             data.append({
                 'id': obj_uri,
-                'title': obj_title,
+                'title': remove_tags(obj_title),
                 'description': self.get_description(obj_uri),
                 'type': self.get_type(obj_uri)
             })
@@ -523,25 +556,24 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang='de')
+            lang=cfg.FIRST_LANGUAGE)
 
         res = sparql.query(sparql_query)
 
         if len(res.bindings) > 0:
-            title = res.bindings[0]['title'].value
+            title = remove_tags(res.bindings[0]['title'].value)
         else:
             sparql_query = cfg.TITLE_QUERY.format(
                 uri=obj_uri,
                 prefix=prefixes,
                 fields=fields,
-                lang='de')
+                lang=cfg.SECOND_LANGUAGE)
 
             res = sparql.query(sparql_query)
             if len(res.bindings) > 0:
-                title = res.bindings[0]['title'].value
+                title = remove_tags(res.bindings[0]['title'].value)
             else:
                 title = obj_uri
-
         return title
 
     def get_description(self, obj_uri):
@@ -561,22 +593,22 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang='de')
+            lang=cfg.FIRST_LANGUAGE)
 
         res = sparql.query(sparql_query)
 
         if len(res.bindings) > 0:
-            desc = res.bindings[0]['title'].value
+            desc = remove_tags(res.bindings[0]['title'].value)
         else:
             sparql_query = cfg.TITLE_QUERY.format(
                 uri=obj_uri,
                 prefix=prefixes,
                 fields=fields,
-                lang='de')
+                lang=cfg.SECOND_LANGUAGE)
 
             res = sparql.query(sparql_query)
             if len(res.bindings) > 0:
-                desc = res.bindings[0]['title'].value
+                desc = remove_tags(res.bindings[0]['title'].value)
             else:
                 desc = ''
 
@@ -621,25 +653,25 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query_de = cfg.TITLE_QUERY_LANG.format(
+        sparql_query_first_lang = cfg.TITLE_QUERY_LANG.format(
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
-            lang='de')
+            lang=cfg.FIRST_LANGUAGE)
 
-        res_de = sparql.query(sparql_query_de)
+        res_de = sparql.query(sparql_query_first_lang)
 
         if res_de.bindings:
             label = res_de.bindings[0]['title'].value
             return label
 
-        sparql_query_en = cfg.TITLE_QUERY_LANG.format(
+        sparql_query_second_lang = cfg.TITLE_QUERY_LANG.format(
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
-            lang='en')
+            lang=cfg.SECOND_LANGUAGE)
 
-        res_en = sparql.query(sparql_query_en)
+        res_en = sparql.query(sparql_query_second_lang)
 
         if res_en.bindings:
             label = res_en.bindings[0]['title'].value
@@ -659,8 +691,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
         data = self.tripel_store.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query)
-
-        return data
+        return remove_tags_turtle(data)
 
     def get_download_file(self, params):
         """
