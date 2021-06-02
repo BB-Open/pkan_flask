@@ -23,6 +23,7 @@ setup(
         'colorlog',
         'rdflib',
         'schedule',
+        'bs4'
     ],
 
     dependency_links = [
