@@ -96,3 +96,25 @@ HARVEST_PASS = 'XXX'
 
 FIRST_LANGUAGE = 'de'
 SECOND_LANGUAGE = 'en'
+
+# Mail Settings
+
+EMAIL_TEMPLATE = """
+Auf dem Datenadler wurde ein Problem gemeldet.
+
+Nachricht:
+{message}
+
+URL:
+{link}
+"""
+
+EMAIL_SUBJECT = "Datenadler Problem gemeldet"
+# todo
+
+MAIL_CONFIG = {
+    'MAIL_USERNAME' : 'username',
+    'MAIL_PASSWORD' :'pw',
+    'MAIL_PORT' : 25,
+    'MAIL_SERVER' : 'server',
+}

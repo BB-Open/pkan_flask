@@ -4,15 +4,15 @@
 
 
 import functools
+import logging
 import sys
 import traceback
-import logging
 
+import simplejson as sj
 from flask import Flask, request, jsonify
 from flask import send_file
 from flask_cors import CORS
-
-import simplejson as sj
+from flask_mail import Mail, Message
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
@@ -30,6 +30,10 @@ app = Flask(__name__)
 CORS(app, resources={r"*": {"origins": "*"}})
 
 DB_MANAGER = DBManager()
+
+app.config.update(cfg.MAIL_CONFIG)
+
+mail = Mail(app)
 
 
 def pkan_status(f):
@@ -55,6 +59,23 @@ def pkan_status(f):
         return(sj.dumps(res_data))
 
     return wrapped
+
+# Email
+
+def send_problem_mail(link, message):
+    template = cfg.EMAIL_TEMPLATE
+    subject = cfg.EMAIL_SUBJECT
+
+    body = template.format(link=link, message=message)
+
+    message = Message(subject)
+
+    message.recipients = [cfg.MAIL_CONFIG['MAIL_USERNAME']]
+    message.sender = cfg.MAIL_CONFIG['MAIL_USERNAME']
+
+    message.body = body
+
+    mail.send(message)
 
 # Download
 
@@ -214,4 +235,20 @@ def request_items_detail(data=None):
     data = {}
     data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
     LOGGER.info('request_items_detail finished')
+    return jsonify(data)
+
+@app.route('/send_email', methods=['Post'])
+def send_email(data=None):
+    LOGGER.info('send_email')
+    params = sj.loads(request.data)
+
+    LOGGER.info(params)
+
+    link = params['link']
+    message = params['message']
+
+    send_problem_mail(link, message)
+
+    LOGGER.info('send_email finished')
+    data = {}
     return jsonify(data)

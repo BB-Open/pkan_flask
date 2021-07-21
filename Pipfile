@@ -15,6 +15,7 @@ simplejson = "==3.16.0"
 colorlog = "==4.0.2"
 rdflib = "==4.2.2"
 bs4 = "*"
+flask-mail = "*"
 'pkan.blazegraph' = {git = "https://github.com/BB-Open/pkan.blazegraph.git", editable = true}
 
 [requires]
