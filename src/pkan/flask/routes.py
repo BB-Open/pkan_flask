@@ -233,7 +233,8 @@ def request_items_detail(data=None):
 
     LOGGER.info(params)
     data = {}
-    data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
+    data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id']).decode('utf-8')
+    LOGGER.info(data)
     LOGGER.info('request_items_detail finished')
     return jsonify(data)
 
