@@ -23,8 +23,17 @@ LOG_COLOURS = {
 # SPARQL RESULT BATCHING
 BATCH_SIZE = 10
 
-# BASE URI of Blazegraph
-BLAZEGRAPH_BASE = 'http://localhost:9999'
+# BASE URI of RDF4J
+RDF4J_BASE = 'http://192.168.122.193:8080/rdf4j-server/'
+
+ADMIN_USER = 'admin'
+ADMIN_PASS = 'pw1'
+
+EDITOR_USER = 'editor'
+EDITOR_PASS = 'pw2'
+
+VIEWER_USER = 'viewer'
+VIEWER_PASS = 'pw3'
 
 PLONE_SKOS_CONCEPT_NAMESPACE = 'skos_concepts'
 PLONE_DCAT_NAMESPACE = 'dcat_store'
@@ -87,8 +96,8 @@ FORBIDDEN_SPARQL_KEYWORDS = ['modify', 'delete', 'insert', 'clear', 'drop', 'cre
 
 # Perodic scheduler for harveting
 HARVEST_URL = 'https://backend.datenadler.de/real_run_cron'
-HARVEST_PERIOD = 120    # seconds
-SCHEDULER_PERIOD = 60   # seconds
+HARVEST_PERIOD = 120  # seconds
+SCHEDULER_PERIOD = 60  # seconds
 HARVEST_USER = 'XXX'
 HARVEST_PASS = 'XXX'
 
@@ -113,8 +122,18 @@ EMAIL_SUBJECT = "Datenadler Problem gemeldet"
 # todo
 
 MAIL_CONFIG = {
-    'MAIL_USERNAME' : 'username',
-    'MAIL_PASSWORD' :'pw',
-    'MAIL_PORT' : 25,
-    'MAIL_SERVER' : 'server',
+    'MAIL_USERNAME': 'username',
+    'MAIL_PASSWORD': 'pw',
+    'MAIL_PORT': 25,
+    'MAIL_SERVER': 'server',
 }
+
+# Types not displayed as type
+IGNORED_TYPES = [
+    'http://www.w3.org/ns/dcat#Resource',
+    'http://www.w3.org/2000/01/rdf-schema#Resource',
+    'http://www.w3.org/2002/07/owl#Thing'
+]
+
+# How many subelements should be included, in detail page download
+QUERY_DEPTH = 7

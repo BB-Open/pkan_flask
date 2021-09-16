@@ -5,7 +5,9 @@ import tempfile
 
 import rdflib
 from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
+from pyrdf4j.rdf4j import RDF4J
 from rdflib import Literal
+from requests.auth import HTTPBasicAuth
 
 try:
     import pkan.flask.configs.config as cfg
@@ -13,7 +15,7 @@ except ImportError:
     import pkan.flask.configs.config_default as cfg
 from pkan.flask.log import LOGGER
 
-from pkan.blazegraph.api import Tripelstore
+# from pkan.blazegraph.api import Tripelstore
 from bs4 import BeautifulSoup
 
 
@@ -47,7 +49,7 @@ def remove_tags_turtle(turtle):
     return res
 
 
-class DBManager():
+class DBManager:
     """
     DB Manager Class providing API
     """
@@ -56,8 +58,10 @@ class DBManager():
         """
         Init
         """
-        self.tripel_store = Tripelstore(cfg.BLAZEGRAPH_BASE)
-        self.tripel_store.generate_namespace_uri('govdata')
+        # self.tripel_store = Tripelstore(cfg.BLAZEGRAPH_BASE)
+        # self.tripel_store.generate_namespace_uri('govdata')
+        self.rdf4j = RDF4J(rdf4j_base=cfg.RDF4J_BASE)
+        self.auth = HTTPBasicAuth(cfg.VIEWER_USER, cfg.VIEWER_PASS)
 
     def get_category_vocab(self):
         """
@@ -78,15 +82,14 @@ class DBManager():
             }
         """
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_SKOS_CONCEPT_NAMESPACE)
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
-        for x in res.bindings:
-            uri = x['s'].value
-            icon_class = x['css'].value
-            title = x['title'].value
+        for x in res['results']['bindings']:
+            uri = x['s']['value']
+            icon_class = x['css']['value']
+            title = x['title']['value']
             data.append({
                 'text': remove_tags(title),
                 'id': uri,
@@ -110,14 +113,13 @@ class DBManager():
             }
         """
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_DCAT_NAMESPACE)
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
-        for x in res.bindings:
-            uri = x['s'].value
-            title = x['title'].value
+        for x in res['results']['bindings']:
+            uri = x['s']['value']
+            title = x['title']['value']
             data.append({
                 'text': remove_tags(title),
                 'id': uri,
@@ -141,14 +143,13 @@ class DBManager():
             }
                 """
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_DCAT_NAMESPACE)
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
-        for x in res.bindings:
-            uri = x['s'].value
-            title = x['title'].value
+        for x in res['results']['bindings']:
+            uri = x['s']['value']
+            title = x['title']['value']
             data.append({
                 'text': remove_tags(title),
                 'id': uri,
@@ -172,14 +173,13 @@ class DBManager():
             }
         """
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_DCAT_NAMESPACE)
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
-        for x in res.bindings:
-            uri = x['s'].value
-            title = x['title'].value
+        for x in res['results']['bindings']:
+            uri = x['s']['value']
+            title = x['title']['value']
             data.append({
                 'text': remove_tags(title),
                 'id': uri,
@@ -327,10 +327,10 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             FILTER(NOT EXISTS { ?distribution dct:license ?license_neg . })"""
             if 'file_format_pos' in values:
                 filters += """
-            ?distribution dct:format ?file_format_pos ."""
+            ?distribution dct:format|dcat:mediaType ?file_format_pos ."""
             if 'file_format_neg' in values:
                 filters += """
-            FILTER(NOT EXISTS { ?distribution dct:license ?file_format_neg . })"""
+            FILTER(NOT EXISTS { ?distribution dct:format|dcat:mediaType ?file_format_neg . })"""
 
         if 'category' in values:
             if 'category_pos' in values:
@@ -418,10 +418,10 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             FILTER(NOT EXISTS { ?distribution dct:license ?license_neg . })"""
             if 'file_format_pos' in values:
                 filters += """
-            ?distribution dct:format ?file_format_pos ."""
+            ?distribution dct:format|dcat:mediaType ?file_format_pos ."""
             if 'file_format_neg' in values:
                 filters += """
-            FILTER(NOT EXISTS { ?distribution dct:license ?file_format_neg . })"""
+            FILTER(NOT EXISTS { ?distribution dct:format|dcat:mediaType ?file_format_neg . })"""
 
         if 'category' in values:
             filters += """
@@ -463,7 +463,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         :return:
         """
         values = self.get_values(params)
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
         query = ''
 
         # Namespaces
@@ -503,7 +503,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         query += self.sorting_option_to_sparql(params)
 
         # we need this to know how many pages of results we have
-        all_res = sparql.query(query)
+        all_res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
 
         # BATCHING
         limit = """
@@ -518,16 +518,16 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             offset=batch_start
         )
 
-        res = sparql.query(query)
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
 
         LOGGER.info('Execute Sparql')
         LOGGER.info(query)
 
         data = []
 
-        for obj in res.bindings:
-            obj_uri = obj['id'].value
-            obj_title = obj['title'].value
+        for obj in res['results']['bindings']:
+            obj_uri = obj['id']['value']
+            obj_title = obj['title']['value']
             data.append({
                 'id': obj_uri,
                 'title': remove_tags(obj_title),
@@ -537,7 +537,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         LOGGER.info(data)
 
-        return data, len(all_res.bindings)
+        return data, len(all_res['results']['bindings'])
 
     def get_title(self, obj_uri):
         """
@@ -550,7 +550,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         fields = '|'.join(cfg.TITLE_FIELDS)
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
         sparql_query = cfg.TITLE_QUERY_LANG.format(
             uri=obj_uri,
@@ -558,10 +558,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             fields=fields,
             lang=cfg.FIRST_LANGUAGE)
 
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
-        if len(res.bindings) > 0:
-            title = remove_tags(res.bindings[0]['title'].value)
+        if len(res['results']['bindings']) > 0:
+            title = remove_tags(res['results']['bindings'][0]['title']['value'])
         else:
             sparql_query = cfg.TITLE_QUERY.format(
                 uri=obj_uri,
@@ -569,9 +569,9 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
                 fields=fields,
                 lang=cfg.SECOND_LANGUAGE)
 
-            res = sparql.query(sparql_query)
-            if len(res.bindings) > 0:
-                title = remove_tags(res.bindings[0]['title'].value)
+            res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
+            if len(res['results']['bindings']) > 0:
+                title = remove_tags(res['results']['bindings'][0]['title']['value'])
             else:
                 title = obj_uri
         return title
@@ -587,7 +587,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         fields = '|'.join(cfg.DESCRIPTION_FIELDS)
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
         sparql_query = cfg.TITLE_QUERY_LANG.format(
             uri=obj_uri,
@@ -595,10 +595,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             fields=fields,
             lang=cfg.FIRST_LANGUAGE)
 
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
-        if len(res.bindings) > 0:
-            desc = remove_tags(res.bindings[0]['title'].value)
+        if len(res['results']['bindings']) > 0:
+            desc = remove_tags(res['results']['bindings'][0]['title']['value'])
         else:
             sparql_query = cfg.TITLE_QUERY.format(
                 uri=obj_uri,
@@ -606,9 +606,9 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
                 fields=fields,
                 lang=cfg.SECOND_LANGUAGE)
 
-            res = sparql.query(sparql_query)
-            if len(res.bindings) > 0:
-                desc = remove_tags(res.bindings[0]['title'].value)
+            res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
+            if len(res['results']['bindings']) > 0:
+                desc = remove_tags(res['results']['bindings'][0]['title']['value'])
             else:
                 desc = ''
 
@@ -620,23 +620,29 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         :param obj_uri:
         :return:
         """
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
         sparql_query = """
                     PREFIX dct:<http://purl.org/dc/terms/>
-                    SELECT ?type
+                    SELECT ?t
                     WHERE
                     {{
-                    <{uri}> a ?type.
+                    <{uri}> a ?t.
                     }}
                 """.format(uri=obj_uri)
 
-        res = sparql.query(sparql_query)
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
-        if len(res.bindings) > 0:
-            res_type = res.bindings[0]['type'].value
-            type_label = self.get_field_label(res_type)
-        else:
+        type_label = None
+
+        for x in res['results']['bindings']:
+            t_type = x['t']['type']
+            t_value = x['t']['value']
+            if t_value not in cfg.IGNORED_TYPES and t_type == 'uri':
+                type_label = self.get_field_label(t_value)
+                break
+
+        if type_label is None:
             type_label = 'Kein Datentyp gefunden'
 
         return type_label
@@ -651,7 +657,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         fields = '|'.join(cfg.LABEL_FIELDS)
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
         sparql_query_first_lang = cfg.TITLE_QUERY_LANG.format(
             uri=label_uri,
@@ -659,10 +665,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             fields=fields,
             lang=cfg.FIRST_LANGUAGE)
 
-        res_de = sparql.query(sparql_query_first_lang)
+        res_de = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_first_lang, auth=self.auth)
 
-        if res_de.bindings:
-            label = res_de.bindings[0]['title'].value
+        if res_de['results']['bindings']:
+            label = res_de['results']['bindings'][0]['title']['value']
             return label
 
         sparql_query_second_lang = cfg.TITLE_QUERY_LANG.format(
@@ -671,10 +677,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             fields=fields,
             lang=cfg.SECOND_LANGUAGE)
 
-        res_en = sparql.query(sparql_query_second_lang)
+        res_en = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_second_lang, auth=self.auth)
 
-        if res_en.bindings:
-            label = res_en.bindings[0]['title'].value
+        if res_en['results']['bindings']:
+            label = res_en['results']['bindings'][0]['title']['value']
             return label
 
         return label_uri
@@ -690,7 +696,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
-        data = self.tripel_store.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query)
+        # data = self.tripel_store.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query)
+        data = self.rdf4j.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
         return remove_tags_turtle(data)
 
     def get_download_file(self, params):
@@ -719,35 +726,31 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         if params['id']:
             obj_id = params['id']
-            export_type = params['type']
-            if export_type == 'tree':
-                # we take a high bound to get all children
-                upperBound = 1000
-                sparql_filter = "?s = ?to || ?s = <" + obj_id + ">"
-                bidirectional = 'false'
-            else:
-                # type graph
-                upperBound = params['count']
-                sparql_filter = "?s = ?to || ?s = <" + obj_id + \
-                                "> || ?p = <" + obj_id + "> || ?o = <" \
-                                + obj_id + ">"
-                bidirectional = 'true'
-            query = '''CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o.
-            SERVICE bd:alp { <''' + obj_id + '''> ?edge ?to .
- hint:Prior hint:alp.pathExpr true .
- hint:Group hint:alp.lowerBound 1 .
- hint:Group hint:alp.upperBound ''' + str(upperBound) + ''' .
- hint:Group hint:alp.bidirectional ''' + bidirectional + ''' .
-    }
-         FILTER(''' + sparql_filter + ''')
- }'''
+
+            triples = []
+            triplet_subject = '?s'
+
+            for x in range(cfg.QUERY_DEPTH):
+                triplet_object = '?o' + x * 'o'
+                triplet_pradicat = triplet_object + 'p'
+                triplet = triplet_subject + ' ' + triplet_pradicat + ' ' + triplet_object
+                triplet_subject = triplet_object
+
+                triples.append(triplet)
+
+            construct_arg = '.\n'.join(triples)
+            constrct_where = '. \noptional {'.join(triples) + '}' * (cfg.QUERY_DEPTH - 1)
+
+
+            query = "construct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <"+ obj_id + ">)}"
+
             LOGGER.info(query)
-            data = self.tripel_store.get_triple_data_from_query(
-                cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type)
+            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type, auth=self.auth)
         else:
             query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
-            data = self.tripel_store.get_triple_data_from_query(
-                cfg.PLONE_DCAT_NAMESPACE, query, mime_type)
+            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
+                                                         auth=self.auth)
+        print(data)
         file.write(data)
         file.flush()
 
@@ -800,8 +803,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         LOGGER.info('Execute Sparql')
         LOGGER.info(query)
 
-        for obj in res.bindings:
-            obj_uri = obj['id'].value
+        for obj in res['results']['bindings']:
+            obj_uri = obj['id']['value']
             data.append({
                 'id': obj_uri,
                 'title': self.get_title(obj_uri),
@@ -811,4 +814,4 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         LOGGER.info(data)
 
-        return data, len(all_res.bindings), None
+        return data, len(all_res['results']['bindings']), None
