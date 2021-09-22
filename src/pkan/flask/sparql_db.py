@@ -914,7 +914,6 @@ WHERE {
             }
             )
         result_fields = []
-        # todo: accessURL, downloadUrl
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
                 PREFIX dct: <http://purl.org/dc/terms/>
                 Select DISTINCT ?s 
@@ -933,7 +932,8 @@ WHERE {
         if formats:
             result_fields.append({
                 'field': 'Format',
-                'value': '; '.join(set(formats))
+                'value': '; '.join(set(formats)),
+                'is_url': False,
             })
 
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
@@ -950,7 +950,8 @@ WHERE {
         if urls:
             result_fields.append({
                 'field': 'Zugangsurl',
-                'value': '; '.join(set(urls))
+                'value': '; '.join(set(urls)),
+                'is_url': True,
             })
 
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
@@ -967,7 +968,8 @@ WHERE {
         if urls:
             result_fields.append({
                 'field': 'Download Url',
-                'value': '; '.join(set(urls))
+                'value': '; '.join(set(urls)),
+                'is_url': True,
             })
 
         return {
