@@ -829,6 +829,33 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         return data, len(all_res['results']['bindings']), None
 
+    def get_simple_view_objects(self, query):
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        objects = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            objects.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+        return objects
+
+    def get_simple_view_fields(self, query, is_url=False):
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+
+        formats = []
+        for obj in res['results']['bindings']:
+            obj_value = obj['s']['value']
+            obj_type = obj['s']['type']
+            if obj_type == 'uri' and not is_url:
+                formats.append(self.get_title(obj_value))
+            else:
+                formats.append(obj_value)
+
+        return formats
+
     def get_simple_view_catalog(self, id):
 
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
@@ -837,16 +864,7 @@ WHERE {
   <""" + id + """> ?o ?s .
   ?s a dcat:Dataset . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        datasets = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            datasets.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        datasets = self.get_simple_view_objects(query)
 
         return {
             'title': self.get_title(id),
@@ -861,16 +879,7 @@ WHERE {
           ?s ?o <""" + id + """> .
           ?s a dcat:Catalog . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        catalogs = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            catalogs.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        catalogs = self.get_simple_view_objects(query)
 
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
                 Select DISTINCT ?s 
@@ -878,16 +887,7 @@ WHERE {
                   <""" + id + """> ?o ?s.
                   ?s a dcat:Distribution . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        distributions = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            distributions.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        distributions = self.get_simple_view_objects(query)
 
         return {
             'title': self.get_title(id),
@@ -903,32 +903,15 @@ WHERE {
           ?s ?o <""" + id + """> .
           ?s a dcat:Dataset . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        datasets = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            datasets.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        datasets = self.get_simple_view_objects(query)
+
         result_fields = []
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
                 PREFIX dct: <http://purl.org/dc/terms/>
                 Select DISTINCT ?s 
                 WHERE {
                   <""" + id + """> dct:format|dcat:mediaType ?s. }"""
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-
-        formats = []
-        for obj in res['results']['bindings']:
-            obj_value = obj['s']['value']
-            obj_type = obj['s']['type']
-            if obj_type == 'uri':
-                formats.append(self.get_title(obj_value))
-            else:
-                formats.append(obj_value)
+        formats = self.get_simple_view_fields(query, is_url=False)
         if formats:
             result_fields.append({
                 'field': 'Format',
@@ -940,16 +923,25 @@ WHERE {
                         PREFIX dct: <http://purl.org/dc/terms/>
                         Select DISTINCT ?s 
                         WHERE {
-                          <""" + id + """> dcat:accessURL ?s. }"""
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+                          <""" + id + """> dct:license ?s. }"""
 
-        urls = []
-        for obj in res['results']['bindings']:
-            obj_value = obj['s']['value']
-            urls.append(obj_value)
+        formats = self.get_simple_view_fields(query, is_url=False)
+        if formats:
+            result_fields.append({
+                'field': 'Lizens',
+                'value': '; '.join(set(formats)),
+                'is_url': False,
+            })
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                        PREFIX dct: <http://purl.org/dc/terms/>
+                        Select DISTINCT ?s 
+                        WHERE {
+                          <""" + id + """> dcat:accessURL ?s. }"""
+        urls = self.get_simple_view_fields(query, is_url=True)
         if urls:
             result_fields.append({
-                'field': 'Zugangsurl',
+                'field': 'Zugang',
                 'value': '; '.join(set(urls)),
                 'is_url': True,
             })
@@ -959,15 +951,10 @@ WHERE {
                                 Select DISTINCT ?s 
                                 WHERE {
                                   <""" + id + """> dcat:downloadURL ?s. }"""
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-
-        urls = []
-        for obj in res['results']['bindings']:
-            obj_value = obj['s']['value']
-            urls.append(obj_value)
+        urls = self.get_simple_view_fields(query, is_url=True)
         if urls:
             result_fields.append({
-                'field': 'Download Url',
+                'field': 'Download',
                 'value': '; '.join(set(urls)),
                 'is_url': True,
             })
@@ -986,16 +973,7 @@ WHERE {
                   ?s ?o <""" + id + """> .
                   ?s a dcat:Catalog . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        catalogs = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            catalogs.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        catalogs = self.get_simple_view_objects(query)
 
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
                 Select DISTINCT ?s 
@@ -1003,16 +981,7 @@ WHERE {
                   ?s ?o <""" + id + """> .
                   ?s a dcat:Dataset . }"""
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-        datasets = []
-        for obj in res['results']['bindings']:
-            obj_uri = obj['s']['value']
-            datasets.append({
-                'id': obj_uri,
-                'title': self.get_title(obj_uri),
-                'description': self.get_description(obj_uri)
-            }
-            )
+        datasets = self.get_simple_view_objects(query)
         return {
             'title': self.get_title(id),
             'description': self.get_description(id),
