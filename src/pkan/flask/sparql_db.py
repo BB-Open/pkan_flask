@@ -994,8 +994,26 @@ WHERE {
                 'description': self.get_description(obj_uri)
             }
             )
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                Select DISTINCT ?s 
+                WHERE {
+                  ?s ?o <""" + id + """> .
+                  ?s a dcat:Dataset . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        datasets = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            datasets.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
         return {
             'title': self.get_title(id),
             'description': self.get_description(id),
             'catalogs': catalogs,
+            'datasets': datasets,
         }
