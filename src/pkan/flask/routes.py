@@ -253,3 +253,55 @@ def send_email(data=None):
     LOGGER.info('send_email finished')
     data = {}
     return jsonify(data)
+
+@app.route('/request_simple_view_catalog', methods=['Post'])
+def request_simple_view_catalog(data=None):
+    LOGGER.info('request_simple_view_catalog')
+    params = sj.loads(request.data)
+    LOGGER.info(params)
+
+    id = params['id']
+
+    data = DB_MANAGER.get_simple_view_catalog(id)
+
+    LOGGER.info('request_simple_view_catalog finished')
+    return data
+
+@app.route('/request_simple_view_dataset', methods=['Post'])
+def request_simple_view_dataset(data=None):
+    LOGGER.info('request_simple_view_dataset')
+    params = sj.loads(request.data)
+    LOGGER.info(params)
+
+    id = params['id']
+
+    data = DB_MANAGER.get_simple_view_dataset(id)
+
+    LOGGER.info('request_simple_view_dataset finished')
+    return data
+
+@app.route('/request_simple_view_distribution', methods=['Post'])
+def request_simple_view_distribution(data=None):
+    LOGGER.info('request_simple_view_distribution')
+    params = sj.loads(request.data)
+    LOGGER.info(params)
+
+    id = params['id']
+
+    data = DB_MANAGER.get_simple_view_distribution(id)
+
+    LOGGER.info('request_simple_view_distribution finished')
+    return data
+
+@app.route('/request_simple_view_publisher', methods=['Post'])
+def request_simple_view_publisher(data=None):
+    LOGGER.info('request_simple_view_publisher')
+    params = sj.loads(request.data)
+    LOGGER.info(params)
+
+    id = params['id']
+
+    data = DB_MANAGER.get_simple_view_publisher(id)
+
+    LOGGER.info('request_simple_view_publisher finished')
+    return data

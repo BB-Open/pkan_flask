@@ -20,7 +20,6 @@ from bs4 import BeautifulSoup
 
 
 def remove_tags(html):
-
     # parse html content
     soup = BeautifulSoup(html, "html.parser")
 
@@ -528,12 +527,23 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         for obj in res['results']['bindings']:
             obj_uri = obj['id']['value']
             obj_title = obj['title']['value']
-            data.append({
-                'id': obj_uri,
-                'title': remove_tags(obj_title),
-                'description': self.get_description(obj_uri),
-                'type': self.get_type(obj_uri)
-            })
+            type_uri = self.get_type(obj_uri, type_uri=True)
+            if type_uri:
+                data.append({
+                    'id': obj_uri,
+                    'title': remove_tags(obj_title),
+                    'description': self.get_description(obj_uri),
+                    'type_id': type_uri,
+                    'type': self.get_field_label(type_uri)
+                })
+            else:
+                data.append({
+                    'id': obj_uri,
+                    'title': remove_tags(obj_title),
+                    'description': self.get_description(obj_uri),
+                    'type_id': None,
+                    'type': 'Kein Datentyp gefunden'
+                })
 
         LOGGER.info(data)
 
@@ -614,7 +624,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         return desc
 
-    def get_type(self, obj_uri):
+    def get_type(self, obj_uri, type_uri=False):
         """
         Get the type related to a obj_id
         :param obj_uri:
@@ -633,19 +643,23 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
 
         res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
-        type_label = None
+        type_uri_val = None
 
         for x in res['results']['bindings']:
             t_type = x['t']['type']
             t_value = x['t']['value']
             if t_value not in cfg.IGNORED_TYPES and t_type == 'uri':
-                type_label = self.get_field_label(t_value)
+                type_uri_val = t_value
                 break
+        if type_uri:
+            return type_uri_val
 
-        if type_label is None:
-            type_label = 'Kein Datentyp gefunden'
+        if type_uri_val is not None:
+            label = self.get_field_label(type_uri_val)
+        else:
+            label = 'Kein Datentyp gefunden'
 
-        return type_label
+        return label
 
     def get_field_label(self, label_uri):
         """
@@ -741,11 +755,11 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             construct_arg = '.\n'.join(triples)
             constrct_where = '. \noptional {'.join(triples) + '}' * (cfg.QUERY_DEPTH - 1)
 
-
-            query = "construct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <"+ obj_id + ">)}"
+            query = "construct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <" + obj_id + ">)}"
 
             LOGGER.info(query)
-            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type, auth=self.auth)
+            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type,
+                                                         auth=self.auth)
         else:
             query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
             data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
@@ -789,7 +803,6 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             error = 'Das Statement konnte nicht ausgeführt werden: Query Bad Formed.'
             return data, 0, error
 
-
         query += limit.format(
             limit=batch_end - batch_start,
             offset=batch_start
@@ -815,3 +828,174 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         LOGGER.info(data)
 
         return data, len(all_res['results']['bindings']), None
+
+    def get_simple_view_catalog(self, id):
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+Select DISTINCT ?s 
+WHERE {
+  <""" + id + """> ?o ?s .
+  ?s a dcat:Dataset . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        datasets = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            datasets.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+
+        return {
+            'title': self.get_title(id),
+            'description': self.get_description(id),
+            'datasets': datasets,
+        }
+
+    def get_simple_view_dataset(self, id):
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+        Select DISTINCT ?s 
+        WHERE {
+          ?s ?o <""" + id + """> .
+          ?s a dcat:Catalog . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        catalogs = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            catalogs.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                Select DISTINCT ?s 
+                WHERE {
+                  <""" + id + """> ?o ?s.
+                  ?s a dcat:Distribution . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        distributions = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            distributions.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+
+        return {
+            'title': self.get_title(id),
+            'description': self.get_description(id),
+            'catalogs': catalogs,
+            'distributions': distributions,
+        }
+
+    def get_simple_view_distribution(self, id):
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+        Select DISTINCT ?s 
+        WHERE {
+          ?s ?o <""" + id + """> .
+          ?s a dcat:Dataset . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        datasets = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            datasets.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+        result_fields = []
+        # todo: accessURL, downloadUrl
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                PREFIX dct: <http://purl.org/dc/terms/>
+                Select DISTINCT ?s 
+                WHERE {
+                  <""" + id + """> dct:format|dcat:mediaType ?s. }"""
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+
+        formats = []
+        for obj in res['results']['bindings']:
+            obj_value = obj['s']['value']
+            obj_type = obj['s']['type']
+            if obj_type == 'uri':
+                formats.append(self.get_title(obj_value))
+            else:
+                formats.append(obj_value)
+        if formats:
+            result_fields.append({
+                'field': 'Format',
+                'value': '; '.join(set(formats))
+            })
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                        PREFIX dct: <http://purl.org/dc/terms/>
+                        Select DISTINCT ?s 
+                        WHERE {
+                          <""" + id + """> dcat:accessURL ?s. }"""
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+
+        urls = []
+        for obj in res['results']['bindings']:
+            obj_value = obj['s']['value']
+            urls.append(obj_value)
+        if urls:
+            result_fields.append({
+                'field': 'Zugangsurl',
+                'value': '; '.join(set(urls))
+            })
+
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                                PREFIX dct: <http://purl.org/dc/terms/>
+                                Select DISTINCT ?s 
+                                WHERE {
+                                  <""" + id + """> dcat:downloadURL ?s. }"""
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+
+        urls = []
+        for obj in res['results']['bindings']:
+            obj_value = obj['s']['value']
+            urls.append(obj_value)
+        if urls:
+            result_fields.append({
+                'field': 'Download Url',
+                'value': '; '.join(set(urls))
+            })
+
+        return {
+            'title': self.get_title(id),
+            'description': self.get_description(id),
+            'datasets': datasets,
+            'result_fields': result_fields
+        }
+
+    def get_simple_view_publisher(self, id):
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                Select DISTINCT ?s 
+                WHERE {
+                  ?s ?o <""" + id + """> .
+                  ?s a dcat:Catalog . }"""
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        catalogs = []
+        for obj in res['results']['bindings']:
+            obj_uri = obj['s']['value']
+            catalogs.append({
+                'id': obj_uri,
+                'title': self.get_title(obj_uri),
+                'description': self.get_description(obj_uri)
+            }
+            )
+        return {
+            'title': self.get_title(id),
+            'description': self.get_description(id),
+            'catalogs': catalogs,
+        }
