@@ -888,6 +888,15 @@ WHERE {
                   ?s a dcat:Distribution . }"""
 
         distributions = self.get_simple_view_objects(query)
+        for element in distributions:
+            element_id = element['id']
+            query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                            PREFIX dct: <http://purl.org/dc/terms/>
+                            Select DISTINCT ?s 
+                            WHERE {
+                              <""" + element_id + """> dct:format|dcat:mediaType ?s. }"""
+            formats = self.get_simple_view_fields(query, is_url=False)
+            element['formats'] = '; '.join(set(formats))
 
         return {
             'title': self.get_title(id),
@@ -928,7 +937,7 @@ WHERE {
         formats = self.get_simple_view_fields(query, is_url=False)
         if formats:
             result_fields.append({
-                'field': 'Lizens',
+                'field': 'Lizenz',
                 'value': '; '.join(set(formats)),
                 'is_url': False,
             })
