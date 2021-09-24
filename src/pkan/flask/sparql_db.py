@@ -914,6 +914,16 @@ WHERE {
 
         datasets = self.get_simple_view_objects(query)
 
+        query = """prefix dcat: <http://www.w3.org/ns/dcat#>
+                Select DISTINCT ?s 
+                WHERE {
+                  ?s ?o ?d .
+                  ?s a dcat:Catalog .
+                  ?d ?od <""" + id + """> .
+                  ?d a dcat:Dataset . }"""
+
+        catalogs = self.get_simple_view_objects(query)
+
         result_fields = []
         query = """prefix dcat: <http://www.w3.org/ns/dcat#>
                 PREFIX dct: <http://purl.org/dc/terms/>
@@ -972,6 +982,7 @@ WHERE {
             'title': self.get_title(id),
             'description': self.get_description(id),
             'datasets': datasets,
+            'catalogs': catalogs,
             'result_fields': result_fields
         }
 
