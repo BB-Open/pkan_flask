@@ -830,6 +830,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         return data, len(all_res['results']['bindings']), None
 
     def get_simple_view_objects(self, query):
+
         res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
         objects = []
         for obj in res['results']['bindings']:
@@ -840,6 +841,10 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
                 'description': self.get_description(obj_uri)
             }
             )
+
+        # sort on title
+        objects = sorted(objects, key=lambda k: k['title'])
+
         return objects
 
     def get_simple_view_fields(self, query, is_url=False):
