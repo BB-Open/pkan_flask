@@ -705,7 +705,9 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         :param obj_id:
         :return:
         """
-        query = "CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" \
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.ALL_PREFIXES)
+
+        query = prefixes + "\nCONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" \
                 + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + "> )}"
 
         # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
@@ -723,6 +725,8 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         file = tempfile.NamedTemporaryFile()
 
         file_name = file.name
+
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.ALL_PREFIXES)
 
         download_name = 'sparql_download'
         if params['format'] == 'rdf/json':
@@ -755,13 +759,15 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             construct_arg = '.\n'.join(triples)
             constrct_where = '. \noptional {'.join(triples) + '}' * (cfg.QUERY_DEPTH - 1)
 
-            query = "construct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <" + obj_id + ">)}"
+
+
+            query = prefixes + "\nconstruct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <" + obj_id + ">)}"
 
             LOGGER.info(query)
             data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type,
                                                          auth=self.auth)
         else:
-            query = 'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
+            query = prefixes + '\nCONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
             data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
                                                          auth=self.auth)
         print(data)
