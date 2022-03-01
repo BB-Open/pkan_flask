@@ -69,13 +69,25 @@ LABEL_PREFIXES = [
 ]
 
 TITLE_QUERY_LANG = """
-                    {prefix}
+    {prefix}
                     SELECT ?title
                     WHERE {{
                      <{uri}> {fields} ?title.
-                     FILTER(lang(?title) = '{lang}')
+                     filter (
+                    !isLiteral(?title) ||
+                    langmatches(lang(?title), '{lang}') 
+                    || (langmatches(lang(?title), '{second_lang}') && not exists {{
+             <{uri}> {fields} ?other.
+                            filter(isLiteral(?other) && langmatches(lang(?other), '{lang}')) 
+                    }})
+                    || (langmatches(lang(?title), "") && not exists {{
+                            <{uri}> {fields} ?other_again.
+                            filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '{lang}'
+                            ) || langmatches(lang(?other_again), '{second_lang}')))
+                    }})
+                    )     
                     }}
-                """
+"""
 
 TITLE_QUERY = """
                     {prefix}

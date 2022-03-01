@@ -77,8 +77,24 @@ class DBManager:
             {?s a skos:Concept.
             ?s foaf:depiction?css.
             ?s dct:title ?title.
-            FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
-            }
+            filter (
+            !isLiteral(?title) ||
+            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+                    ?s a skos:Concept.
+                ?s foaf:depiction?css.
+                ?s dct:title ?other.
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+            })
+            || (langmatches(lang(?title), "") && not exists { 
+                    ?s a skos:Concept.
+                ?s foaf:depiction?css.
+                ?s dct:title ?other_again.
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+            })
+            )     
+            } 
         """
 
         res = self.rdf4j.query_repository(cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
@@ -102,14 +118,31 @@ class DBManager:
         Provide a vocab including the categories
         :return:
         """
+
         sparql_query = """
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+            prefix skos: <http://www.w3.org/2004/02/skos/core#>
             PREFIX dct: <http://purl.org/dc/terms/>
             SELECT DISTINCT ?s ?title
             WHERE
             {?s a dct:MediaTypeOrExtent.
              ?s dct:title ?title.
-             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
-            }
+            filter (
+            !isLiteral(?title) ||
+            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+                    ?s a dct:MediaTypeOrExtent.
+             ?s dct:title ?other.
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+            })
+            || (langmatches(lang(?title), "") && not exists { 
+                    ?s a dct:MediaTypeOrExtent.
+             ?s dct:title ?other_again.
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+            })
+            )     
+            } 
         """
 
         res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
@@ -132,15 +165,32 @@ class DBManager:
         Provide a vocab including the categories
         :return:
         """
+
         sparql_query = """
             prefix foaf: <http://xmlns.com/foaf/0.1/>
+            prefix skos: <http://www.w3.org/2004/02/skos/core#>
+            PREFIX dct: <http://purl.org/dc/terms/>
             SELECT DISTINCT ?s ?title
             WHERE
             {?s a foaf:Agent.
              ?s foaf:name ?title.
-             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
-            }
-                """
+            filter (
+            !isLiteral(?title) ||
+            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+                    ?s a foaf:Agent.
+             ?s foaf:name ?other.
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+            })
+            || (langmatches(lang(?title), "") && not exists {
+                    ?s a foaf:Agent.
+             ?s foaf:name ?other_again.
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+            })
+            )     
+            } 
+        """
 
         res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
@@ -163,14 +213,30 @@ class DBManager:
         :return:
         """
         sparql_query = """
-            PREFIX dct: <http://purl.org/dc/terms/>
-            SELECT DISTINCT ?s ?title
-            WHERE
-            {?s a dct:LicenseDocument.
+                    prefix foaf: <http://xmlns.com/foaf/0.1/>
+                    prefix skos: <http://www.w3.org/2004/02/skos/core#>
+                    PREFIX dct: <http://purl.org/dc/terms/>
+                    SELECT DISTINCT ?s ?title
+                    WHERE
+                    {?s a dct:LicenseDocument.
              ?s dct:title ?title.
-             FILTER(lang(?title) = '""" + cfg.FIRST_LANGUAGE + """')
-            }
-        """
+                    filter (
+                    !isLiteral(?title) ||
+                    langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
+                    || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+                            ?s a dct:LicenseDocument.
+             ?s dct:title ?other.
+                            filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+                    })
+                    || (langmatches(lang(?title), "") && not exists { 
+                            ?s a dct:LicenseDocument.
+             ?s dct:title ?other_again.
+                            filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
+                            ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+                    })
+                    )     
+                    } 
+                """
 
         res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
@@ -566,24 +632,15 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE)
+            lang=cfg.FIRST_LANGUAGE,
+            second_lang = cfg.SECOND_LANGUAGE)
 
         res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
         if len(res['results']['bindings']) > 0:
             title = remove_tags(res['results']['bindings'][0]['title']['value'])
         else:
-            sparql_query = cfg.TITLE_QUERY.format(
-                uri=obj_uri,
-                prefix=prefixes,
-                fields=fields,
-                lang=cfg.SECOND_LANGUAGE)
-
-            res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
-            if len(res['results']['bindings']) > 0:
-                title = remove_tags(res['results']['bindings'][0]['title']['value'])
-            else:
-                title = obj_uri
+            title = obj_uri
         return title
 
     def get_description(self, obj_uri):
@@ -603,24 +660,16 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE)
+            lang=cfg.FIRST_LANGUAGE,
+            second_lang=cfg.SECOND_LANGUAGE
+        )
 
         res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
         if len(res['results']['bindings']) > 0:
             desc = remove_tags(res['results']['bindings'][0]['title']['value'])
         else:
-            sparql_query = cfg.TITLE_QUERY.format(
-                uri=obj_uri,
-                prefix=prefixes,
-                fields=fields,
-                lang=cfg.SECOND_LANGUAGE)
-
-            res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
-            if len(res['results']['bindings']) > 0:
-                desc = remove_tags(res['results']['bindings'][0]['title']['value'])
-            else:
-                desc = ''
+            desc = ''
 
         return desc
 
@@ -677,24 +726,13 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE)
+            lang=cfg.FIRST_LANGUAGE,
+            second_lang=cfg.SECOND_LANGUAGE)
 
         res_de = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_first_lang, auth=self.auth)
 
         if res_de['results']['bindings']:
             label = res_de['results']['bindings'][0]['title']['value']
-            return label
-
-        sparql_query_second_lang = cfg.TITLE_QUERY_LANG.format(
-            uri=label_uri,
-            prefix=prefixes,
-            fields=fields,
-            lang=cfg.SECOND_LANGUAGE)
-
-        res_en = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_second_lang, auth=self.auth)
-
-        if res_en['results']['bindings']:
-            label = res_en['results']['bindings'][0]['title']['value']
             return label
 
         return label_uri
