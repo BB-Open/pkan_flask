@@ -18,7 +18,12 @@ def plone_harvest():
     :return:
     """
     LOGGER.info('Initiate harvesting')
-    response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+    try:
+        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+    except requests.exceptions.ConnectionError:
+        # retry one time
+        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+
     if response.status_code == 200:
         LOGGER.info('Harvesting initiated')
         LOGGER.info('Harvesting Response is: %s', response)
