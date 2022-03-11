@@ -94,7 +94,7 @@ LANG_FILTER = """filter (
                     langmatches(lang(?{field}), '{lang}') 
                     || (langmatches(lang(?{field}), '{second_lang}') && not exists {{
              {id} {fields} ?other{field}.
-                            filter(isLiteral(?other{field}) && langmatches(lang(?other), '{lang}')) 
+                            filter(isLiteral(?other{field}) && langmatches(lang(?other{field}), '{lang}')) 
                     }})
                     || (langmatches(lang(?{field}), "") && not exists {{
                             {id} {fields} ?other_again{field}.

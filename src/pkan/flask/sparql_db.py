@@ -346,7 +346,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
         query += '}'
         fields_type_title = '|'.join(cfg.LABEL_FIELDS)
         query += '''OPTIONAL {?type ''' + fields_type_title + ''' ?type_title. '''
-        query += cfg.LANG_FILTER.format(field='type_title', fields=fields, lang=cfg.FIRST_LANGUAGE,
+        query += cfg.LANG_FILTER.format(field='type_title', fields=fields_type_title, lang=cfg.FIRST_LANGUAGE,
                                         second_lang=cfg.SECOND_LANGUAGE, id='?type')
         query += '}'
 
