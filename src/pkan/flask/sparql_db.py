@@ -613,23 +613,29 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
 
         for obj in res['results']['bindings']:
             obj_uri = obj['id']['value']
-            obj_title = obj['title']['value']
+            obj_title = remove_tags(obj['title']['value'])
             type_uri = obj['type']['value']
+            desc = ''
+            if 'desc' in obj:
+                desc = remove_tags(obj['desc']['value'])
+            type_title = 'Kein Datentyp gefunden'
+            if 'type_title' in obj:
+                type_title = remove_tags(obj['type_title']['value'])
             if type_uri:
                 data.append({
                     'id': obj_uri,
-                    'title': remove_tags(obj_title),
-                    'description': remove_tags(obj['desc']['value']),
+                    'title': obj_title,
+                    'description': desc,
                     'type_id': type_uri,
-                    'type': remove_tags(obj['type_title']['value'])
+                    'type': type_title
                 })
             else:
                 data.append({
                     'id': obj_uri,
                     'title': remove_tags(obj_title),
-                    'description': remove_tags(obj['desc']['value']),
+                    'description': desc,
                     'type_id': None,
-                    'type': 'Kein Datentyp gefunden'
+                    'type': type_title
                 })
 
         LOGGER.info(data)
