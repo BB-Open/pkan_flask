@@ -300,7 +300,9 @@ class DBManager:
 prefix dcat: <http://www.w3.org/ns/dcat#>
 prefix dct: <http://purl.org/dc/terms/>
 prefix foaf: <http://xmlns.com/foaf/0.1/>
-prefix bds: <http://www.bigdata.com/rdf/search#>"""
+prefix bds: <http://www.bigdata.com/rdf/search#>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
         return namespaces
 
     def get_values(self, params):
@@ -346,7 +348,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?o"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?type ?o"""
         query += select
 
         # WHERE
@@ -363,6 +365,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             ?id ?p ?o .
             ?id a dcat:Dataset .
             ?id dct:title ?title .
+            ?id a ?type .
             OPTIONAL {?id dct:modified ?date .}"""
 
         query += where_base_fields
@@ -438,7 +441,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?o"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?type ?default_score ?o"""
         query += select
 
         # WHERE
@@ -455,6 +458,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
             ?id ?p ?o .
             ?id a dcat:Catalog .
             ?id dct:title ?title .
+            ?id a ?type.
             OPTIONAL {?id dct:modified ?date .}"""
 
         query += where_base_fields
@@ -537,7 +541,7 @@ prefix bds: <http://www.bigdata.com/rdf/search#>"""
         # SELECT
 
         query += """
-SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
+SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score WHERE {
 { """
         # SUBQUERIES
 
@@ -593,7 +597,7 @@ SELECT DISTINCT ?id ?date ?title ?score ?default_score WHERE {
         for obj in res['results']['bindings']:
             obj_uri = obj['id']['value']
             obj_title = obj['title']['value']
-            type_uri = self.get_type(obj_uri, type_uri=True)
+            type_uri = obj['type']['value']
             if type_uri:
                 data.append({
                     'id': obj_uri,
