@@ -337,6 +337,22 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
 
         return query
 
+    def type_title_desc_query(self):
+        # description
+        fields = '|'.join(cfg.DESCRIPTION_FIELDS)
+
+        query = '''OPTIONAL {?id '''+ fields + ''' ?desc. '''
+        query += cfg.LANG_FILTER.format(field='desc', fields=fields, lang=cfg.FIRST_LANGUAGE, second_lang=cfg.SECOND_LANGUAGE, id='?id')
+        query += '}'
+        fields_type_title = '|'.join(cfg.LABEL_FIELDS)
+        query += '''OPTIONAL {?type ''' + fields_type_title + ''' ?type_title. '''
+        query += cfg.LANG_FILTER.format(field='type_title', fields=fields, lang=cfg.FIRST_LANGUAGE,
+                                        second_lang=cfg.SECOND_LANGUAGE, id='?type')
+        query += '}'
+
+        return query
+
+
     def get_search_results_dataset(self, params, values):
         """
         sparql-query for datasets
@@ -348,7 +364,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?type ?o"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?default_score ?type ?o ?desc ?type_title"""
         query += select
 
         # WHERE
@@ -366,9 +382,10 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
             ?id a dcat:Dataset .
             ?id dct:title ?title .
             ?id a ?type .
-            OPTIONAL {?id dct:modified ?date .}"""
+            OPTIONAL {?id dct:modified ?date }"""
 
-        query += where_base_fields
+
+        query += where_base_fields + self.type_title_desc_query()
 
         filters = """"""
 
@@ -441,7 +458,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
         # params example
 
         # SELECT
-        select = """\nSELECT DISTINCT ?id ?date ?title ?type ?default_score ?o"""
+        select = """\nSELECT DISTINCT ?id ?date ?title ?type ?default_score ?o ?desc ?type_title"""
         query += select
 
         # WHERE
@@ -459,7 +476,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
             ?id a dcat:Catalog .
             ?id dct:title ?title .
             ?id a ?type.
-            OPTIONAL {?id dct:modified ?date .}"""
+            OPTIONAL {?id dct:modified ?date .}""" + self.type_title_desc_query()
 
         query += where_base_fields
 
@@ -541,7 +558,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
         # SELECT
 
         query += """
-SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score WHERE {
+SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title WHERE {
 { """
         # SUBQUERIES
 
@@ -602,15 +619,15 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score WHERE {
                 data.append({
                     'id': obj_uri,
                     'title': remove_tags(obj_title),
-                    'description': self.get_description(obj_uri),
+                    'description': remove_tags(obj['desc']['value']),
                     'type_id': type_uri,
-                    'type': self.get_field_label(type_uri)
+                    'type': remove_tags(obj['type_title']['value'])
                 })
             else:
                 data.append({
                     'id': obj_uri,
                     'title': remove_tags(obj_title),
-                    'description': self.get_description(obj_uri),
+                    'description': remove_tags(obj['desc']['value']),
                     'type_id': None,
                     'type': 'Kein Datentyp gefunden'
                 })

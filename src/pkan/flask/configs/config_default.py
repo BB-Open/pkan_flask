@@ -89,6 +89,20 @@ TITLE_QUERY_LANG = """
                     }}
 """
 
+LANG_FILTER = """filter (
+                    !isLiteral(?{field}) ||
+                    langmatches(lang(?{field}), '{lang}') 
+                    || (langmatches(lang(?{field}), '{second_lang}') && not exists {{
+             {id} {fields} ?other{field}.
+                            filter(isLiteral(?other{field}) && langmatches(lang(?other), '{lang}')) 
+                    }})
+                    || (langmatches(lang(?{field}), "") && not exists {{
+                            {id} {fields} ?other_again{field}.
+                            filter(isLiteral(?other_again{field}) && (langmatches(lang(?other_again{field}), '{lang}'
+                            ) || langmatches(lang(?other_again{field}), '{second_lang}')))
+                    }})
+                    )     """
+
 TITLE_QUERY = """
                     {prefix}
                     SELECT ?title
