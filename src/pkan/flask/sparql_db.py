@@ -604,10 +604,12 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
             offset=batch_start
         )
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
-
         LOGGER.info('Execute Sparql')
         LOGGER.info(query)
+
+        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+
+        LOGGER.info('Sparql executed. Processing Results')
 
         data = []
 
@@ -638,7 +640,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
                     'type': type_title
                 })
 
-        LOGGER.info(data)
+        LOGGER.info('Results Processed')
 
         return data, len(all_res['results']['bindings'])
 
