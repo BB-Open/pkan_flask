@@ -110,9 +110,9 @@ def request_vocab(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request')
+    LOGGER.info('request')
     params = sj.loads(request.data)
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
 
     vocab = params['vocab']
@@ -127,8 +127,8 @@ def request_vocab(data=None):
         data['vocab'] = DB_MANAGER.get_publisher_vocab()
     else:
         data['vocab'] = DB_MANAGER.get_sorting_options()
-    LOGGER.debug('request %s finished', params)
-    LOGGER.debug('response is %s ', data)
+    LOGGER.info('request %s finished', params)
+    LOGGER.info('response is %s ', data)
     return jsonify(data)
 
 
@@ -139,10 +139,10 @@ def request_search_results(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request_search_results')
+    LOGGER.info('request_search_results')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
     try:
         data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
@@ -156,7 +156,7 @@ def request_search_results(data=None):
         data['results'], data['result_count'] = [], 0
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
-    LOGGER.debug('request_search_results finished: %s ', data)
+    LOGGER.info('request_search_results finished: %s ', data)
     return jsonify(data)
 
 @app.route('/request_search_results_sparql', methods=['POST'])
@@ -166,19 +166,19 @@ def request_search_results_sparql(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request_search_results_sparql')
+    LOGGER.info('request_search_results_sparql')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
     data['results'], data['result_count'], data['error_message'] = \
         DB_MANAGER.get_search_results_sparql(params)
     if data['error_message']:
-        LOGGER.debug(data['error_message'])
+        LOGGER.info(data['error_message'])
         data['response_code'] = cfg.BAD_REQUEST
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
-    LOGGER.debug('request_search_results_sparql finished')
+    LOGGER.info('request_search_results_sparql finished')
     return jsonify(data)
 
 
@@ -189,17 +189,17 @@ def request_items_title_desc(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request_items_title_desc')
+    LOGGER.info('request_items_title_desc')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
     obj_id = params['id']
     data['title'] = DB_MANAGER.get_title(obj_id)
     data['description'] = DB_MANAGER.get_description(obj_id)
     data['type'] = DB_MANAGER.get_type(obj_id)
     data['id'] = obj_id
-    LOGGER.debug('request_items_title_desc finished')
+    LOGGER.info('request_items_title_desc finished')
     return jsonify(data)
 
 
@@ -210,17 +210,17 @@ def request_label(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request label')
+    LOGGER.info('request label')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
 
     obj_id = params['id']
 
     data['label'] = DB_MANAGER.get_field_label(obj_id)
     data['id'] = obj_id
-    LOGGER.debug('request label finished')
+    LOGGER.info('request label finished')
     return jsonify(data)
 
 
@@ -231,90 +231,90 @@ def request_items_detail(data=None):
     :param data:
     :return:
     """
-    LOGGER.debug('request_items_detail')
+    LOGGER.info('request_items_detail')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
     data = {}
     data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
-    LOGGER.debug(data)
-    LOGGER.debug('request_items_detail finished')
+    LOGGER.info(data)
+    LOGGER.info('request_items_detail finished')
     return jsonify(data)
 
 @app.route('/send_email', methods=['Post'])
 def send_email(data=None):
-    LOGGER.debug('send_email')
+    LOGGER.info('send_email')
     params = sj.loads(request.data)
 
-    LOGGER.debug(params)
+    LOGGER.info(params)
 
     link = params['link']
     message = params['message']
 
     send_problem_mail(link, message)
 
-    LOGGER.debug('send_email finished')
+    LOGGER.info('send_email finished')
     data = {}
     return jsonify(data)
 
 @app.route('/request_simple_view_catalog', methods=['Post'])
 def request_simple_view_catalog(data=None):
-    LOGGER.debug('request_simple_view_catalog')
+    LOGGER.info('request_simple_view_catalog')
     params = sj.loads(request.data)
-    LOGGER.debug(params)
+    LOGGER.info(params)
 
     id = params['id']
 
     data = DB_MANAGER.get_simple_view_catalog(id)
 
-    LOGGER.debug('request_simple_view_catalog finished')
+    LOGGER.info('request_simple_view_catalog finished')
     return data
 
 @app.route('/request_simple_view_dataset', methods=['Post'])
 def request_simple_view_dataset(data=None):
-    LOGGER.debug('request_simple_view_dataset')
+    LOGGER.info('request_simple_view_dataset')
     params = sj.loads(request.data)
-    LOGGER.debug(params)
+    LOGGER.info(params)
 
     id = params['id']
 
     data = DB_MANAGER.get_simple_view_dataset(id)
 
-    LOGGER.debug('request_simple_view_dataset finished')
+    LOGGER.info('request_simple_view_dataset finished')
     return data
 
 @app.route('/request_simple_view_distribution', methods=['Post'])
 def request_simple_view_distribution(data=None):
-    LOGGER.debug('request_simple_view_distribution')
+    LOGGER.info('request_simple_view_distribution')
     params = sj.loads(request.data)
-    LOGGER.debug(params)
+    LOGGER.info(params)
 
     id = params['id']
 
     data = DB_MANAGER.get_simple_view_distribution(id)
 
-    LOGGER.debug('request_simple_view_distribution finished')
+    LOGGER.info('request_simple_view_distribution finished')
     return data
 
 @app.route('/request_simple_view_publisher', methods=['Post'])
 def request_simple_view_publisher(data=None):
-    LOGGER.debug('request_simple_view_publisher')
+    LOGGER.info('request_simple_view_publisher')
     params = sj.loads(request.data)
-    LOGGER.debug(params)
+    LOGGER.info(params)
 
     id = params['id']
 
     data = DB_MANAGER.get_simple_view_publisher(id)
 
-    LOGGER.debug('request_simple_view_publisher finished')
+    LOGGER.info('request_simple_view_publisher finished')
     return data
 
 
 @app.route('/solr_request', methods=['Post'])
 def solr_request(data=None):
     """Minimal wrapper between SOLR and the frontend"""
-    LOGGER.debug('solr request')
-    LOGGER.debug(request.data)
+    LOGGER.info('solr request')
+    LOGGER.info(request.data)
 
     # query for information and return results
     result = requests.post(
@@ -323,5 +323,5 @@ def solr_request(data=None):
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
-    LOGGER.debug('solr request finished')
+    LOGGER.info('solr request finished')
     return result.content
