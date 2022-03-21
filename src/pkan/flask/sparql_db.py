@@ -5,6 +5,8 @@ import tempfile
 
 import rdflib
 from SPARQLWrapper.SPARQLExceptions import QueryBadFormed
+
+import pyrdf4j
 from pyrdf4j.rdf4j import RDF4J
 from rdflib import Literal
 from requests.auth import HTTPBasicAuth
@@ -15,7 +17,6 @@ except ImportError:
     import pkan.flask.configs.config_default as cfg
 from pkan.flask.log import LOGGER
 
-# from pkan.blazegraph.api import Tripelstore
 from bs4 import BeautifulSoup
 
 
@@ -96,10 +97,13 @@ class DBManager:
             )     
             } 
         """
-
-        res = self.rdf4j.query_repository(cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
-
         data = []
+
+        try:
+            res = self.rdf4j.query_repository(cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
+        except pyrdf4j.errors.QueryFailed as e:
+            LOGGER.warning('Query for skos:Concepts failed')
+            return data
 
         for x in res['results']['bindings']:
             uri = x['s']['value']

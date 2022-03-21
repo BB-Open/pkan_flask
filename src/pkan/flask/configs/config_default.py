@@ -179,3 +179,6 @@ ALL_PREFIXES = [
     'xsd: <http://www.w3.org/2001/XMLSchema#>',
     'vcard: <http://www.w3.org/2006/vcard/ns#>',
 ]
+
+SOLR_SELECT_URI = 'http://localhost:8983/solr/datasets/select'
+SOLR_SUGGEST_URI = 'http://localhost:8983/solr/datasets/suggest'

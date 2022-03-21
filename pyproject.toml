@@ -9,7 +9,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pyrdf4j = { path = "../datenadler_rdf4j", develop = true }
+pyrdf4j = { path = "../pyrdf4j", develop = true }
 Flask = "^2.0.1"
 simplejson = "^3.17.5"
 Flask-Cors = "^3.0.10"
