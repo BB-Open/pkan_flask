@@ -1,0 +1,21 @@
+ <searchComponent name="suggest" class="solr.SuggestComponent">
+    <lst name="suggester">
+      <str name="name">mySuggester</str>
+      <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+      <str name="suggestAnalyzerFieldType">text_general</str>
+      <str name="unicodeAware">true</str>
+      <str name="field">dcterms_title</str>
+      <str name="buildOnStartup">true</str>
+    </lst>
+  </searchComponent>
+
+ <requestHandler name="/suggest" class="solr.SearchHandler" startup="lazy" >
+    <lst name="defaults">
+      <str name="suggest">true</str>
+      <str name="suggest.count">10</str>
+      <str name="suggest.dictionary">mySuggester</str>
+    </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+  </requestHandler>

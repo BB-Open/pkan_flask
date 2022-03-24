@@ -315,13 +315,53 @@ def solr_request(data=None):
     """Minimal wrapper between SOLR and the frontend"""
     LOGGER.info('solr request')
     LOGGER.info(request.data)
+    params = sj.loads(request.data)
 
+#    params['defType'] = "lucene"
+#    params['qf'] = "dcterms_title, dcterms_description"
+
+    query_str = params['query']
+    query_tokens = query_str.split(' ')
+    if len(query_tokens) == 1:
+        params['query'] = 'dcterms_title:*{}*'.format(query_tokens[0])
+    else :
+        params['query'] = 'dcterms_title:*{}* AND dcterms_title:*{}*'.format(query_tokens[0],query_tokens[1])
     # query for information and return results
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=request.data,
+        data=sj.dumps(params),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
+    results_params = sj.loads(result.content)
+    if results_params['response']['numFound'] == 0:
+        params['query'] = 'dcterms_title:*{}* OR dcterms_title:*{}*'.format(query_tokens[0],query_tokens[1])
+        result = requests.post(
+            cfg.SOLR_SELECT_URI,
+            data=sj.dumps(params),
+            headers={"Content-type": "application/json; charset=utf-8"}
+        )
+
     LOGGER.info('solr request finished')
+
     return result.content
+
+
+@app.route('/solr_suggest', methods=['post'])
+def solr_suggest(data=None):
+    """Minimal wrapper between SOLR and the frontend"""
+    LOGGER.info('solr suggest')
+#    params = sj.loads(request.data)
+#    query_str = params['params']['suggest.q']
+#    query_tokens = query_str.split(' ')
+
+    result = requests.get(
+        cfg.SOLR_SUGGEST_URI,
+        data=request.data,
+        headers={"Content-type": "application/json; charset=utf-8"}
+    )
+    LOGGER.info('solr suggest finished')
+    return result.content
+
+
+

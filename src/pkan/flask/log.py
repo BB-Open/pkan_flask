@@ -25,6 +25,10 @@ if not os.path.exists(cfg.PKAN_LOG_DIR):
         USERNAME, USERNAME, cfg.PKAN_LOG_DIR))
     sys.exit(1)
 
+print(
+    "Log file directory is %s " %
+    cfg.PKAN_LOG_DIR)
+
 try:
     import colorlog
     from colorlog import ColoredFormatter
