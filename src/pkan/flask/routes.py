@@ -321,11 +321,11 @@ def solr_search(data=None):
     query_tokens = query_str.split(' ')
     if len(query_tokens) == 1:
         if query_tokens[0] == '*:*':
-            params['query'] = 'dcterms:*'.format(query_tokens[0])
+            params['query'] = 'suggest:*'.format(query_tokens[0])
         else:
-            params['query'] = 'dcterms_title:*{}*'.format(query_tokens[0])
+            params['query'] = 'suggest:*{}*'.format(query_tokens[0])
     elif len(query_tokens) == 2:
-        params['query'] = 'dcterms_title:*{}* AND dcterms_title:*{}*'.format(query_tokens[0],query_tokens[1])
+        params['query'] = 'suggest:*{}* AND suggest:*{}*'.format(query_tokens[0],query_tokens[1])
     result = requests.post(
         cfg.SOLR_SELECT_URI,
         data=sj.dumps(params),
@@ -348,6 +348,8 @@ def solr_suggest(data=None):
         data=request.data,
         headers={"Content-type": "application/json; charset=utf-8"}
     )
+
+
     LOGGER.debug('solr suggest finished')
     return result.content
 
