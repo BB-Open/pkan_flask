@@ -317,21 +317,18 @@ def solr_request(data=None):
     LOGGER.info(request.data)
     params = sj.loads(request.data)
 
-#    params['defType'] = "lucene"
-#    params['qf'] = "dcterms_title, dcterms_description"
-
     query_str = params['query']
     query_tokens = query_str.split(' ')
     if len(query_tokens) == 1:
         params['query'] = 'dcterms_title:*{}*'.format(query_tokens[0])
-    else :
+    elif len(query_tokens) == 2:
         params['query'] = 'dcterms_title:*{}* AND dcterms_title:*{}*'.format(query_tokens[0],query_tokens[1])
-    # query for information and return results
     result = requests.post(
         cfg.SOLR_SELECT_URI,
         data=sj.dumps(params),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
+    #ToDo more than 2 tokens
 
     results_params = sj.loads(result.content)
     if results_params['response']['numFound'] == 0:
@@ -341,6 +338,7 @@ def solr_request(data=None):
             data=sj.dumps(params),
             headers={"Content-type": "application/json; charset=utf-8"}
         )
+
 
     LOGGER.info('solr request finished')
 
