@@ -317,18 +317,18 @@ def solr_search(data=None):
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
 
-    query_str = params['query']
+    query_str = params['q']
     query_tokens = query_str.split(' ')
     if len(query_tokens) == 1:
         if query_tokens[0] == '*:*':
-            params['query'] = 'suggest:*'.format(query_tokens[0])
+            params['q'] = 'suggest:*'.format(query_tokens[0])
         else:
-            params['query'] = 'suggest:*{}*'.format(query_tokens[0])
+            params['q'] = 'suggest:*{}*'.format(query_tokens[0])
     elif len(query_tokens) == 2:
-        params['query'] = 'suggest:*{}* AND suggest:*{}*'.format(query_tokens[0],query_tokens[1])
+        params['q'] = 'suggest:*{}* AND suggest:*{}*'.format(query_tokens[0],query_tokens[1])
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=sj.dumps(params),
+        data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
     #ToDo more than 2 tokens
