@@ -319,19 +319,20 @@ def solr_search(data=None):
 
     query_str = params['q']
     query_tokens = query_str.split(' ')
-    if len(query_tokens) == 1:
-        if query_tokens[0] == '*:*':
-            params['q'] = 'suggest:*'.format(query_tokens[0])
-        else:
-            params['q'] = 'suggest:*{}*'.format(query_tokens[0])
-    elif len(query_tokens) == 2:
-        params['q'] = 'suggest:*{}* AND suggest:*{}*'.format(query_tokens[0],query_tokens[1])
+    query_tokens_clean = []
+    for token in query_tokens:
+        query_tokens_clean.append('suggest:*{}*'.format(token))
+
+    params['q'] = ' AND '.join(query_tokens_clean)
+
+    LOGGER.info('Query Solr:')
+    LOGGER.info(params['q'])
+
     result = requests.post(
         cfg.SOLR_SELECT_URI,
         data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
-    #ToDo more than 2 tokens
 
     LOGGER.debug('solr search finished')
 
