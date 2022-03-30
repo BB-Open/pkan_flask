@@ -8,8 +8,9 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.9,<4.0"
 pyrdf4j = { path = "../pyrdf4j", develop = true }
+pkan_config = {path="../pkan_config", develop=true}
 Flask = "^2.0.1"
 simplejson = "^3.17.5"
 Flask-Cors = "^3.0.10"

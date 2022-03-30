@@ -6,11 +6,11 @@ import sys
 from logging import StreamHandler, getLogger, Formatter, DEBUG
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
+from pkan_config.config import get_config, register_config
 
-try:
-    import pkan.flask.configs.config as cfg
-except ImportError:
-    import pkan.flask.configs.config_default as cfg
+register_config(env='Production')
+
+cfg = get_config()
 
 if not os.path.exists(cfg.PKAN_LOG_DIR):
     print(
@@ -38,7 +38,7 @@ try:
         "message)s",
         datefmt=None,
         reset=True,
-        log_colors=cfg.LOG_COLOURS,
+        log_colors=cfg.log_colors,
         secondary_log_colors={},
         style='%'
     )

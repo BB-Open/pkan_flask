@@ -5,18 +5,15 @@ from requests.auth import HTTPBasicAuth
 import schedule
 
 from pkan.flask.log import LOGGER
-
-try:
-    import pkan.flask.configs.config as cfg
-except ImportError:
-    import pkan.flask.configs.config_default as cfg
-
+from pkan_config.config import get_config
 
 def plone_harvest():
     """
     Harvest Plone Objects and transfer dem in sparql-store
     :return:
     """
+    cfg = get_config()
+
     LOGGER.info('Initiate harvesting')
     try:
         response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
@@ -46,6 +43,8 @@ def start_scheduler():
     start the scheduler
     :return:
     """
+    cfg = get_config()
+
     LOGGER.info('Initializing the scheduler')
     schedule.every(cfg.HARVEST_PERIOD).seconds.do(plone_harvest)
     LOGGER.info('Scheduler intitialized')

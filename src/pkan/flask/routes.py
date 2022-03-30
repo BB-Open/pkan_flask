@@ -17,14 +17,14 @@ from flask_mail import Mail, Message
 
 from pkan.flask.log import LOGGER
 from pkan.flask.sparql_db import DBManager
+from pkan.flask.constants import BAD_REQUEST, INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG, REQUEST_OK, EMAIL_TEMPLATE
+
+from pkan_config.config import register_config, get_config
 
 import requests
 
-try:
-    import pkan.flask.configs.config as cfg
-except ImportError:
-    import pkan.flask.configs.config_default as cfg
-
+register_config(env='Production')
+cfg = get_config()
 
 logging.getLogger('flask_cors').level = logging.DEBUG
 
@@ -34,7 +34,12 @@ CORS(app, resources={r"*": {"origins": "*"}})
 
 DB_MANAGER = DBManager()
 
-app.config.update(cfg.MAIL_CONFIG)
+app.config.update({
+  'MAIL_USERNAME': cfg.MAIL_USERNAME,
+  'MAIL_PASSWORD': cfg.MAIL_PASSWORD,
+  'MAIL_PORT': cfg.MAIL_PORT,
+  'MAIL_SERVER': cfg.MAIL_SERVER
+})
 
 mail = Mail(app)
 
@@ -48,13 +53,13 @@ def pkan_status(f):
     @functools.wraps(f)
     def wrapped(data=None):
         res_data = {}
-        res_data['response_code'] = cfg.REQUEST_OK
+        res_data['response_code'] = REQUEST_OK
         res_data['error_message'] = ''
         try:
             res_data.update(f(data=data))
         except Exception as _e:
-            res_data['response_code'] = cfg.INTERNAL_SERVER_ERROR
-            res_data['error_message'] = cfg.INTERNAL_SERVER_ERROR_MSG
+            res_data['response_code'] = INTERNAL_SERVER_ERROR
+            res_data['error_message'] = INTERNAL_SERVER_ERROR_MSG
             exc_type, exc_value, exc_traceback = sys.exc_info()
             LOGGER.error("Request failed with Error %s %s ", exc_type, exc_value)
             for line in traceback.format_tb(exc_traceback):
@@ -66,15 +71,15 @@ def pkan_status(f):
 # Email
 
 def send_problem_mail(link, message):
-    template = cfg.EMAIL_TEMPLATE
+    template = EMAIL_TEMPLATE
     subject = cfg.EMAIL_SUBJECT
 
     body = template.format(link=link, message=message)
 
     message = Message(subject)
 
-    message.recipients = [cfg.MAIL_CONFIG['MAIL_USERNAME']]
-    message.sender = cfg.MAIL_CONFIG['MAIL_USERNAME']
+    message.recipients = [cfg.MAIL_USERNAME]
+    message.sender = cfg.MAIL_USERNAME
 
     message.body = body
 
@@ -175,7 +180,7 @@ def request_search_results_sparql(data=None):
         DB_MANAGER.get_search_results_sparql(params)
     if data['error_message']:
         LOGGER.info(data['error_message'])
-        data['response_code'] = cfg.BAD_REQUEST
+        data['response_code'] = BAD_REQUEST
     data['batch_start'] = params['batch_start']
     data['batch_end'] = params['batch_end']
     LOGGER.info('request_search_results_sparql finished')

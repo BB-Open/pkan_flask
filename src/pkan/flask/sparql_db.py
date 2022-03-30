@@ -11,11 +11,9 @@ from pyrdf4j.rdf4j import RDF4J
 from rdflib import Literal
 from requests.auth import HTTPBasicAuth
 
-try:
-    import pkan.flask.configs.config as cfg
-except ImportError:
-    import pkan.flask.configs.config_default as cfg
 from pkan.flask.log import LOGGER
+import pkan.flask.constants as const
+from pkan_config.config import get_config
 
 from bs4 import BeautifulSoup
 
@@ -60,8 +58,9 @@ class DBManager:
         """
         # self.tripel_store = Tripelstore(cfg.BLAZEGRAPH_BASE)
         # self.tripel_store.generate_namespace_uri('govdata')
-        self.rdf4j = RDF4J(rdf4j_base=cfg.RDF4J_BASE)
-        self.auth = HTTPBasicAuth(cfg.VIEWER_USER, cfg.VIEWER_PASS)
+        self.cfg = get_config()
+        self.rdf4j = RDF4J(rdf4j_base=self.cfg.RDF4J_BASE)
+        self.auth = HTTPBasicAuth(self.cfg.VIEWER_USER, self.cfg.VIEWER_PASS)
 
     def get_category_vocab(self):
         """
@@ -80,19 +79,19 @@ class DBManager:
             ?s dct:title ?title.
             filter (
             !isLiteral(?title) ||
-            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
-            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+            langmatches(lang(?title), '""" + self.cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + self.cfg.SECOND_LANGUAGE + """') && not exists {
                     ?s a skos:Concept.
                 ?s foaf:depiction?css.
                 ?s dct:title ?other.
-                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + self.cfg.FIRST_LANGUAGE + """')) 
             })
             || (langmatches(lang(?title), "") && not exists { 
                     ?s a skos:Concept.
                 ?s foaf:depiction?css.
                 ?s dct:title ?other_again.
-                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
-                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + self.cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + self.cfg.SECOND_LANGUAGE + """')))
             })
             )     
             } 
@@ -100,7 +99,7 @@ class DBManager:
         data = []
 
         try:
-            res = self.rdf4j.query_repository(cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
+            res = self.rdf4j.query_repository(self.cfg.PLONE_SKOS_CONCEPT_NAMESPACE, sparql_query, auth=self.auth)
         except pyrdf4j.errors.QueryFailed as e:
             LOGGER.warning('Query for skos:Concepts failed')
             return data
@@ -133,23 +132,23 @@ class DBManager:
              ?s dct:title ?title.
             filter (
             !isLiteral(?title) ||
-            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
-            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+            langmatches(lang(?title), '""" + self.cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + self.cfg.SECOND_LANGUAGE + """') && not exists {
                     ?s a dct:MediaTypeOrExtent.
              ?s dct:title ?other.
-                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + self.cfg.FIRST_LANGUAGE + """')) 
             })
             || (langmatches(lang(?title), "") && not exists { 
                     ?s a dct:MediaTypeOrExtent.
              ?s dct:title ?other_again.
-                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
-                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + self.cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + self.cfg.SECOND_LANGUAGE + """')))
             })
             )     
             } 
         """
 
-        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
@@ -180,23 +179,23 @@ class DBManager:
              ?s foaf:name ?title.
             filter (
             !isLiteral(?title) ||
-            langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
-            || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+            langmatches(lang(?title), '""" + self.cfg.FIRST_LANGUAGE + """') 
+            || (langmatches(lang(?title), '""" + self.cfg.SECOND_LANGUAGE + """') && not exists {
                     ?s a foaf:Agent.
              ?s foaf:name ?other.
-                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+                    filter(isLiteral(?other) && langmatches(lang(?other), '""" + self.cfg.FIRST_LANGUAGE + """')) 
             })
             || (langmatches(lang(?title), "") && not exists {
                     ?s a foaf:Agent.
              ?s foaf:name ?other_again.
-                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
-                    ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+                    filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + self.cfg.FIRST_LANGUAGE + """'
+                    ) || langmatches(lang(?other_again), '""" + self.cfg.SECOND_LANGUAGE + """')))
             })
             )     
             } 
         """
 
-        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
@@ -226,23 +225,23 @@ class DBManager:
              ?s dct:title ?title.
                     filter (
                     !isLiteral(?title) ||
-                    langmatches(lang(?title), '""" + cfg.FIRST_LANGUAGE + """') 
-                    || (langmatches(lang(?title), '""" + cfg.SECOND_LANGUAGE + """') && not exists {
+                    langmatches(lang(?title), '""" + self.cfg.FIRST_LANGUAGE + """') 
+                    || (langmatches(lang(?title), '""" + self.cfg.SECOND_LANGUAGE + """') && not exists {
                             ?s a dct:LicenseDocument.
              ?s dct:title ?other.
-                            filter(isLiteral(?other) && langmatches(lang(?other), '""" + cfg.FIRST_LANGUAGE + """')) 
+                            filter(isLiteral(?other) && langmatches(lang(?other), '""" + self.cfg.FIRST_LANGUAGE + """')) 
                     })
                     || (langmatches(lang(?title), "") && not exists { 
                             ?s a dct:LicenseDocument.
              ?s dct:title ?other_again.
-                            filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + cfg.FIRST_LANGUAGE + """'
-                            ) || langmatches(lang(?other_again), '""" + cfg.SECOND_LANGUAGE + """')))
+                            filter(isLiteral(?other_again) && (langmatches(lang(?other_again), '""" + self.cfg.FIRST_LANGUAGE + """'
+                            ) || langmatches(lang(?other_again), '""" + self.cfg.SECOND_LANGUAGE + """')))
                     })
                     )     
                     } 
                 """
 
-        res = self.rdf4j.query_repository(cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_DCAT_NAMESPACE, sparql_query, auth=self.auth)
 
         data = []
 
@@ -343,15 +342,15 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"""
 
     def type_title_desc_query(self):
         # description
-        fields = '|'.join(cfg.DESCRIPTION_FIELDS)
+        fields = '|'.join(const.DESCRIPTION_FIELDS)
 
         query = '''OPTIONAL {?id '''+ fields + ''' ?desc. '''
-        query += cfg.LANG_FILTER.format(field='desc', fields=fields, lang=cfg.FIRST_LANGUAGE, second_lang=cfg.SECOND_LANGUAGE, id='?id')
+        query += const.LANG_FILTER.format(field='desc', fields=fields, lang=self.cfg.FIRST_LANGUAGE, second_lang=self.cfg.SECOND_LANGUAGE, id='?id')
         query += '}'
-        fields_type_title = '|'.join(cfg.LABEL_FIELDS)
+        fields_type_title = '|'.join(const.LABEL_FIELDS)
         query += '''OPTIONAL {?type ''' + fields_type_title + ''' ?type_title. '''
-        query += cfg.LANG_FILTER.format(field='type_title', fields=fields_type_title, lang=cfg.FIRST_LANGUAGE,
-                                        second_lang=cfg.SECOND_LANGUAGE, id='?type')
+        query += const.LANG_FILTER.format(field='type_title', fields=fields_type_title, lang=self.cfg.FIRST_LANGUAGE,
+                                        second_lang=self.cfg.SECOND_LANGUAGE, id='?type')
         query += '}'
 
         return query
@@ -593,15 +592,15 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         query += self.sorting_option_to_sparql(params)
 
         # we need this to know how many pages of results we have
-        all_res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        all_res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
 
         # BATCHING
         limit = """
                 LIMIT {limit}
                 OFFSET {offset}
                 """
-        batch_start = params['batch_start'] * cfg.BATCH_SIZE
-        batch_end = params['batch_end'] * cfg.BATCH_SIZE
+        batch_start = params['batch_start'] * const.BATCH_SIZE
+        batch_end = params['batch_end'] * const.BATCH_SIZE
 
         query += limit.format(
             limit=batch_end - batch_start,
@@ -655,20 +654,20 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         :return:
         """
 
-        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.TITLE_PREFIXES)
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(const.TITLE_PREFIXES)
 
-        fields = '|'.join(cfg.TITLE_FIELDS)
+        fields = '|'.join(const.TITLE_FIELDS)
 
         # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query = cfg.TITLE_QUERY_LANG.format(
+        sparql_query = const.TITLE_QUERY_LANG.format(
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE,
-            second_lang = cfg.SECOND_LANGUAGE)
+            lang=self.cfg.FIRST_LANGUAGE,
+            second_lang = self.cfg.SECOND_LANGUAGE)
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
         if len(res['results']['bindings']) > 0:
             title = remove_tags(res['results']['bindings'][0]['title']['value'])
@@ -683,21 +682,21 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         :return:
         """
 
-        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.DESCRIPTION_PREFIXES)
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(const.DESCRIPTION_PREFIXES)
 
-        fields = '|'.join(cfg.DESCRIPTION_FIELDS)
+        fields = '|'.join(const.DESCRIPTION_FIELDS)
 
         # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query = cfg.TITLE_QUERY_LANG.format(
+        sparql_query = const.TITLE_QUERY_LANG.format(
             uri=obj_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE,
-            second_lang=cfg.SECOND_LANGUAGE
+            lang=self.cfg.FIRST_LANGUAGE,
+            second_lang=self.cfg.SECOND_LANGUAGE
         )
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
         if len(res['results']['bindings']) > 0:
             desc = remove_tags(res['results']['bindings'][0]['title']['value'])
@@ -723,14 +722,14 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
                     }}
                 """.format(uri=obj_uri)
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query, auth=self.auth)
 
         type_uri_val = None
 
         for x in res['results']['bindings']:
             t_type = x['t']['type']
             t_value = x['t']['value']
-            if t_value not in cfg.IGNORED_TYPES and t_type == 'uri':
+            if t_value not in const.IGNORED_TYPES and t_type == 'uri':
                 type_uri_val = t_value
                 break
         if type_uri:
@@ -749,20 +748,20 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         :param label_uri:
         :return:
         """
-        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.LABEL_PREFIXES)
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(const.LABEL_PREFIXES)
 
-        fields = '|'.join(cfg.LABEL_FIELDS)
+        fields = '|'.join(const.LABEL_FIELDS)
 
         # sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
-        sparql_query_first_lang = cfg.TITLE_QUERY_LANG.format(
+        sparql_query_first_lang = const.TITLE_QUERY_LANG.format(
             uri=label_uri,
             prefix=prefixes,
             fields=fields,
-            lang=cfg.FIRST_LANGUAGE,
-            second_lang=cfg.SECOND_LANGUAGE)
+            lang=self.cfg.FIRST_LANGUAGE,
+            second_lang=self.cfg.SECOND_LANGUAGE)
 
-        res_de = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_first_lang, auth=self.auth)
+        res_de = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, sparql_query_first_lang, auth=self.auth)
 
         if res_de['results']['bindings']:
             label = res_de['results']['bindings'][0]['title']['value']
@@ -776,7 +775,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         :param obj_id:
         :return:
         """
-        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.ALL_PREFIXES)
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(const.ALL_PREFIXES)
 
         query = prefixes + "\nCONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o. FILTER(?s = <" \
                 + obj_id + "> || ?p = <" + obj_id + "> || ?o = <" + obj_id + "> )}"
@@ -784,7 +783,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         # query = 'CONSTRUCT  WHERE { ?s ?p ?o }'
 
         # data = self.tripel_store.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query)
-        data = self.rdf4j.get_turtle_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        data = self.rdf4j.get_turtle_from_query(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
         return remove_tags_turtle(data)
 
     def get_download_file(self, params):
@@ -797,7 +796,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
 
         file_name = file.name
 
-        prefixes = 'PREFIX ' + '\nPREFIX '.join(cfg.ALL_PREFIXES)
+        prefixes = 'PREFIX ' + '\nPREFIX '.join(const.ALL_PREFIXES)
 
         download_name = 'sparql_download'
         if params['format'] == 'rdf/json':
@@ -819,7 +818,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
             triples = []
             triplet_subject = '?s'
 
-            for x in range(cfg.QUERY_DEPTH):
+            for x in range(const.QUERY_DEPTH):
                 triplet_object = '?o' + x * 'o'
                 triplet_pradicat = triplet_object + 'p'
                 triplet = triplet_subject + ' ' + triplet_pradicat + ' ' + triplet_object
@@ -828,18 +827,18 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
                 triples.append(triplet)
 
             construct_arg = '.\n'.join(triples)
-            constrct_where = '. \noptional {'.join(triples) + '}' * (cfg.QUERY_DEPTH - 1)
+            constrct_where = '. \noptional {'.join(triples) + '}' * (const.QUERY_DEPTH - 1)
 
 
 
             query = prefixes + "\nconstruct {" + construct_arg + "} where {" + constrct_where + "\nFILTER(?s = <" + obj_id + ">)}"
 
             LOGGER.info(query)
-            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type,
+            data = self.rdf4j.get_triple_data_from_query(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, mime_type=mime_type,
                                                          auth=self.auth)
         else:
             query = prefixes + '\nCONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
-            data = self.rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
+            data = self.rdf4j.get_triple_data_from_query(self.cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
                                                          auth=self.auth)
         print(data)
         file.write(data)
@@ -855,11 +854,11 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         """
         data = []
 
-        sparql = self.tripel_store.sparql_for_namespace(cfg.PLONE_ALL_OBJECTS_NAMESPACE)
+        sparql = self.tripel_store.sparql_for_namespace(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE)
 
         query = params['sparql']
 
-        for word in cfg.FORBIDDEN_SPARQL_KEYWORDS:
+        for word in const.FORBIDDEN_SPARQL_KEYWORDS:
             if word.lower() in query.lower():
                 error = 'Das Statement konnte nicht ausgeführt werden. ' \
                         'Sie benutzen ein verbotenes Keyword: ' + word.lower()
@@ -870,8 +869,8 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
                         LIMIT {limit}
                         OFFSET {offset}
                         """
-        batch_start = params['batch_start'] * cfg.BATCH_SIZE
-        batch_end = params['batch_end'] * cfg.BATCH_SIZE
+        batch_start = params['batch_start'] * const.BATCH_SIZE
+        batch_end = params['batch_end'] * const.BATCH_SIZE
 
         # we need this to know how many pages of results we have
         try:
@@ -908,7 +907,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
 
     def get_simple_view_objects(self, query):
 
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
         objects = []
         for obj in res['results']['bindings']:
             obj_uri = obj['s']['value']
@@ -925,7 +924,7 @@ SELECT DISTINCT ?id ?date ?title ?type ?score ?default_score ?desc ?type_title W
         return objects
 
     def get_simple_view_fields(self, query, is_url=False):
-        res = self.rdf4j.query_repository(cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
+        res = self.rdf4j.query_repository(self.cfg.PLONE_ALL_OBJECTS_NAMESPACE, query, auth=self.auth)
 
         formats = []
         for obj in res['results']['bindings']:
