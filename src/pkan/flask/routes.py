@@ -326,7 +326,7 @@ def solr_search(data=None):
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
     for token in query_tokens:
-        query_tokens_clean.append('suggest:*{}*'.format(token))
+        query_tokens_clean.append('search:*{}*'.format(token))
 
     params['q'] = ' AND '.join(query_tokens_clean)
 
