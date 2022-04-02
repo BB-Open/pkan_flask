@@ -366,10 +366,12 @@ def solr_pick(data=None):
     LOGGER.debug('solr pick')
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
+    id = params['q']
+    params['q'] = 'id:"{}"'.format(id)
 
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=sj.dumps(params),
+        data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
