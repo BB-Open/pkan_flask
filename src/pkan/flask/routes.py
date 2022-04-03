@@ -330,7 +330,14 @@ def solr_search(data=None):
 
     params['q'] = ' AND '.join(query_tokens_clean)
     params['facet'] = 'true'
-    params['facet.field'] = 'dct_publisher_facet'
+    params['json.facet'] = sj.dumps({
+        'dcterms_publisher_facet': {
+            'terms': 'dcterms_publisher_facet'
+        },
+        'dcat_theme_facet': {
+          'terms': 'dcat_theme_facet'
+      }
+    })
 
     LOGGER.info('Query Solr:')
     LOGGER.info(params['q'])
