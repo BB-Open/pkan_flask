@@ -334,9 +334,12 @@ def solr_search(data=None):
         'dcterms_publisher_facet': {
             'terms': 'dcterms_publisher_facet'
         },
+        'dcterms_license_facet': {
+            'terms': 'dcterms_license_facet'
+        },
         'dcat_theme_facet': {
-          'terms': 'dcat_theme_facet'
-      }
+            'terms': 'dcat_theme_facet'
+        }
     })
 
     LOGGER.info('Query Solr:')
