@@ -329,6 +329,8 @@ def solr_search(data=None):
         query_tokens_clean.append('search:*{}*'.format(token))
 
     params['q'] = ' AND '.join(query_tokens_clean)
+    params['facet'] = 'true'
+    params['facet.field'] = 'dct_publisher_facet'
 
     LOGGER.info('Query Solr:')
     LOGGER.info(params['q'])
