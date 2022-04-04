@@ -337,6 +337,9 @@ def solr_search(data=None):
         'dcterms_license_facet': {
             'terms': 'dcterms_license_facet'
         },
+        'dcterms_format_facet': {
+            'terms': 'dcterms_format_facet'
+        },
         'dcat_theme_facet': {
             'terms': 'dcat_theme_facet'
         }
