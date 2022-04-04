@@ -328,7 +328,12 @@ def solr_search(data=None):
     for token in query_tokens:
         query_tokens_clean.append('search:*{}*'.format(token))
 
+    for facet_name, choices in params['choices'].items():
+        for choice in choices:
+            query_tokens_clean.append('{}:{}'.format(facet_name, choice))
+
     params['q'] = ' AND '.join(query_tokens_clean)
+
     params['facet'] = 'true'
     params['json.facet'] = sj.dumps({
         'dcterms_publisher_facet': {
