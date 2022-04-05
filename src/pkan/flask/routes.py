@@ -330,7 +330,7 @@ def solr_search(data=None):
 
     for facet_name, choices in params['choices'].items():
         for choice in choices:
-            query_tokens_clean.append('{}:{}'.format(facet_name, choice))
+            query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
     params['q'] = ' AND '.join(query_tokens_clean)
 
