@@ -361,6 +361,7 @@ def solr_search(data=None):
         data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
+    LOGGER.debug('Response {}'.format(result.content))
 
     LOGGER.debug('solr search finished')
 
