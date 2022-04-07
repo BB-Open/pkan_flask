@@ -379,7 +379,6 @@ def solr_suggest(data=None):
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
-
     LOGGER.debug('solr suggest finished')
     return result.content
 
@@ -399,6 +398,7 @@ def solr_pick(data=None):
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
+    LOGGER.debug('Response {}'.format(result.content))
     LOGGER.debug('solr pick finished')
 
     return result.content
