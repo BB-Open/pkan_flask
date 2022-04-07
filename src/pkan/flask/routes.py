@@ -336,14 +336,14 @@ def solr_search(data=None):
 
     params['facet'] = 'true'
     params['json.facet'] = sj.dumps({
-        'dcterms_publisher_facet': {
-            'terms': 'dcterms_publisher_facet'
+        'dct_publisher_facet': {
+            'terms': 'dct_publisher_facet'
         },
-        'dcterms_license_facet': {
-            'terms': 'dcterms_license_facet'
+        'dct_license_facet': {
+            'terms': 'dct_license_facet'
         },
-        'dcterms_format_facet': {
-            'terms': 'dcterms_format_facet'
+        'dct_format_facet': {
+            'terms': 'dct_format_facet'
         },
         'dcat_theme_facet': {
             'terms': 'dcat_theme_facet'

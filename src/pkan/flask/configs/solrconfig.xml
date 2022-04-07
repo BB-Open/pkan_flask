@@ -4,7 +4,7 @@
       <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
       <str name="suggestAnalyzerFieldType">text_general</str>
       <str name="unicodeAware">true</str>
-      <str name="field">dcterms_title</str>
+      <str name="field">dct_title</str>
       <str name="buildOnStartup">true</str>
     </lst>
   </searchComponent>
