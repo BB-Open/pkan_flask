@@ -347,7 +347,10 @@ def solr_search(data=None):
         },
         'dcat_theme_facet': {
             'terms': 'dcat_theme_facet'
-        }
+        },
+        'rdf_type': {
+            'terms': 'rdf_type'
+        },
     })
 
     LOGGER.info('Query Solr:')
