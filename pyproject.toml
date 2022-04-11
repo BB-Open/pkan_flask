@@ -11,6 +11,7 @@ packages = [
 python = ">=3.8,<4.0"
 pyrdf4j = { path = "../pyrdf4j", develop = true }
 pkan_config = {path="../pkan_config", develop=true}
+iso2dcat = {path="../iso2dcat", develop=true}
 Flask = "^2.0.1"
 simplejson = "^3.17.5"
 Flask-Cors = "^3.0.10"
