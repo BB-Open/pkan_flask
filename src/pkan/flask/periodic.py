@@ -14,20 +14,20 @@ def plone_harvest():
     Harvest Plone Objects and transfer dem in sparql-store
     :return:
     """
-    # cfg = get_config()
+    cfg = get_config()
+
+    LOGGER.info('Initiate harvesting')
+    try:
+        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+    except requests.exceptions.ConnectionError:
+        # retry one time
+        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
     #
-    # LOGGER.info('Initiate harvesting')
-    # try:
-    #     response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
-    # except requests.exceptions.ConnectionError:
-    #     # retry one time
-    #     response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
-    #
-    # if response.status_code == 200:
-    #     LOGGER.info('Harvesting initiated')
-    #     LOGGER.info('Harvesting Response is: %s', response)
-    # else:
-    #     LOGGER.warning('Failed to initiate Harvesting. Error Code: %s', response)
+    if response.status_code == 200:
+        LOGGER.info('Harvesting initiated')
+        LOGGER.info('Harvesting Response is: %s', response)
+    else:
+        LOGGER.warning('Failed to initiate Harvesting. Error Code: %s', response)
 
     LOGGER.info('Start Solr Export')
     try:
