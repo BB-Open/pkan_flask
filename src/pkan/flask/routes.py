@@ -106,213 +106,213 @@ def return_files_tut():
     except Exception as e:
         return str(e)
 
-# DATA OBJECTS
-
-@app.route('/request_vocab', methods=['POST'])
-def request_vocab(data=None):
-    """
-    Request a vocabulary for selecting in frontend
-    :param data:
-    :return:
-    """
-    LOGGER.info('request')
-    params = sj.loads(request.data)
-    LOGGER.info(params)
-    data = {}
-
-    vocab = params['vocab']
-
-    if vocab == 'category':
-        data['vocab'] = DB_MANAGER.get_category_vocab()
-    elif vocab == 'file_format':
-        data['vocab'] = DB_MANAGER.get_file_format_vocab()
-    elif vocab == 'license':
-        data['vocab'] = DB_MANAGER.get_license_vocab()
-    elif vocab == 'publisher':
-        data['vocab'] = DB_MANAGER.get_publisher_vocab()
-    else:
-        data['vocab'] = DB_MANAGER.get_sorting_options()
-    LOGGER.info('request %s finished', params)
-    LOGGER.info('response is %s ', data)
-    return jsonify(data)
-
-
-@app.route('/request_search_results', methods=['POST'])
-def request_search_results(data=None):
-    """
-    Request results of current search
-    :param data:
-    :return:
-    """
-    LOGGER.info('request_search_results')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-    data = {}
-    try:
-        data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
-    except Exception as _e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        LOGGER.error("Failed with Error %s %s ",
-                     exc_type, exc_value)
-        for line in traceback.format_tb(exc_traceback):
-            LOGGER.error("Trace: %s", line[:-1])
-        # ToDo: Fix unspecified Exception catch
-        data['results'], data['result_count'] = [], 0
-    data['batch_start'] = params['batch_start']
-    data['batch_end'] = params['batch_end']
-    LOGGER.info('request_search_results finished: %s ', data)
-    return jsonify(data)
-
-@app.route('/request_search_results_sparql', methods=['POST'])
-def request_search_results_sparql(data=None):
-    """
-    Request results of current search
-    :param data:
-    :return:
-    """
-    LOGGER.info('request_search_results_sparql')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-    data = {}
-    data['results'], data['result_count'], data['error_message'] = \
-        DB_MANAGER.get_search_results_sparql(params)
-    if data['error_message']:
-        LOGGER.info(data['error_message'])
-        data['response_code'] = BAD_REQUEST
-    data['batch_start'] = params['batch_start']
-    data['batch_end'] = params['batch_end']
-    LOGGER.info('request_search_results_sparql finished')
-    return jsonify(data)
-
-
-@app.route('/request_items_title_desc', methods=['POST'])
-def request_items_title_desc(data=None):
-    """
-    Request title and description of a dcat element
-    :param data:
-    :return:
-    """
-    LOGGER.info('request_items_title_desc')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-    data = {}
-    obj_id = params['id']
-    data['title'] = DB_MANAGER.get_title(obj_id)
-    data['description'] = DB_MANAGER.get_description(obj_id)
-    data['type'] = DB_MANAGER.get_type(obj_id)
-    data['id'] = obj_id
-    LOGGER.info('request_items_title_desc finished')
-    return jsonify(data)
-
-
-@app.route('/request_label', methods=['POST'])
-def request_label(data=None):
-    """
-    Request title for a field label
-    :param data:
-    :return:
-    """
-    LOGGER.info('request label')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-    data = {}
-
-    obj_id = params['id']
-
-    data['label'] = DB_MANAGER.get_field_label(obj_id)
-    data['id'] = obj_id
-    LOGGER.info('request label finished')
-    return jsonify(data)
-
-
-@app.route('/request_items_detail', methods=['POST'])
-def request_items_detail(data=None):
-    """
-    Request items detail as rdf ttl
-    :param data:
-    :return:
-    """
-    LOGGER.info('request_items_detail')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-    data = {}
-    data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
-    LOGGER.info(data)
-    LOGGER.info('request_items_detail finished')
-    return jsonify(data)
-
-@app.route('/send_email', methods=['Post'])
-def send_email(data=None):
-    LOGGER.info('send_email')
-    params = sj.loads(request.data)
-
-    LOGGER.info(params)
-
-    link = params['link']
-    message = params['message']
-
-    send_problem_mail(link, message)
-
-    LOGGER.info('send_email finished')
-    data = {}
-    return jsonify(data)
-
-@app.route('/request_simple_view_catalog', methods=['Post'])
-def request_simple_view_catalog(data=None):
-    LOGGER.info('request_simple_view_catalog')
-    params = sj.loads(request.data)
-    LOGGER.info(params)
-
-    id = params['id']
-
-    data = DB_MANAGER.get_simple_view_catalog(id)
-
-    LOGGER.info('request_simple_view_catalog finished')
-    return data
-
-@app.route('/request_simple_view_dataset', methods=['Post'])
-def request_simple_view_dataset(data=None):
-    LOGGER.info('request_simple_view_dataset')
-    params = sj.loads(request.data)
-    LOGGER.info(params)
-
-    id = params['id']
-
-    data = DB_MANAGER.get_simple_view_dataset(id)
-
-    LOGGER.info('request_simple_view_dataset finished')
-    return data
-
-@app.route('/request_simple_view_distribution', methods=['Post'])
-def request_simple_view_distribution(data=None):
-    LOGGER.info('request_simple_view_distribution')
-    params = sj.loads(request.data)
-    LOGGER.info(params)
-
-    id = params['id']
-
-    data = DB_MANAGER.get_simple_view_distribution(id)
-
-    LOGGER.info('request_simple_view_distribution finished')
-    return data
-
-@app.route('/request_simple_view_publisher', methods=['Post'])
-def request_simple_view_publisher(data=None):
-    LOGGER.info('request_simple_view_publisher')
-    params = sj.loads(request.data)
-    LOGGER.info(params)
-
-    id = params['id']
-
-    data = DB_MANAGER.get_simple_view_publisher(id)
-
-    LOGGER.info('request_simple_view_publisher finished')
-    return data
+# # DATA OBJECTS
+#
+# @app.route('/request_vocab', methods=['POST'])
+# def request_vocab(data=None):
+#     """
+#     Request a vocabulary for selecting in frontend
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request')
+#     params = sj.loads(request.data)
+#     LOGGER.info(params)
+#     data = {}
+#
+#     vocab = params['vocab']
+#
+#     if vocab == 'category':
+#         data['vocab'] = DB_MANAGER.get_category_vocab()
+#     elif vocab == 'file_format':
+#         data['vocab'] = DB_MANAGER.get_file_format_vocab()
+#     elif vocab == 'license':
+#         data['vocab'] = DB_MANAGER.get_license_vocab()
+#     elif vocab == 'publisher':
+#         data['vocab'] = DB_MANAGER.get_publisher_vocab()
+#     else:
+#         data['vocab'] = DB_MANAGER.get_sorting_options()
+#     LOGGER.info('request %s finished', params)
+#     LOGGER.info('response is %s ', data)
+#     return jsonify(data)
+#
+#
+# @app.route('/request_search_results', methods=['POST'])
+# def request_search_results(data=None):
+#     """
+#     Request results of current search
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request_search_results')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#     data = {}
+#     try:
+#         data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
+#     except Exception as _e:
+#         exc_type, exc_value, exc_traceback = sys.exc_info()
+#         LOGGER.error("Failed with Error %s %s ",
+#                      exc_type, exc_value)
+#         for line in traceback.format_tb(exc_traceback):
+#             LOGGER.error("Trace: %s", line[:-1])
+#         # ToDo: Fix unspecified Exception catch
+#         data['results'], data['result_count'] = [], 0
+#     data['batch_start'] = params['batch_start']
+#     data['batch_end'] = params['batch_end']
+#     LOGGER.info('request_search_results finished: %s ', data)
+#     return jsonify(data)
+#
+# @app.route('/request_search_results_sparql', methods=['POST'])
+# def request_search_results_sparql(data=None):
+#     """
+#     Request results of current search
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request_search_results_sparql')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#     data = {}
+#     data['results'], data['result_count'], data['error_message'] = \
+#         DB_MANAGER.get_search_results_sparql(params)
+#     if data['error_message']:
+#         LOGGER.info(data['error_message'])
+#         data['response_code'] = BAD_REQUEST
+#     data['batch_start'] = params['batch_start']
+#     data['batch_end'] = params['batch_end']
+#     LOGGER.info('request_search_results_sparql finished')
+#     return jsonify(data)
+#
+#
+# @app.route('/request_items_title_desc', methods=['POST'])
+# def request_items_title_desc(data=None):
+#     """
+#     Request title and description of a dcat element
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request_items_title_desc')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#     data = {}
+#     obj_id = params['id']
+#     data['title'] = DB_MANAGER.get_title(obj_id)
+#     data['description'] = DB_MANAGER.get_description(obj_id)
+#     data['type'] = DB_MANAGER.get_type(obj_id)
+#     data['id'] = obj_id
+#     LOGGER.info('request_items_title_desc finished')
+#     return jsonify(data)
+#
+#
+# @app.route('/request_label', methods=['POST'])
+# def request_label(data=None):
+#     """
+#     Request title for a field label
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request label')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#     data = {}
+#
+#     obj_id = params['id']
+#
+#     data['label'] = DB_MANAGER.get_field_label(obj_id)
+#     data['id'] = obj_id
+#     LOGGER.info('request label finished')
+#     return jsonify(data)
+#
+#
+# @app.route('/request_items_detail', methods=['POST'])
+# def request_items_detail(data=None):
+#     """
+#     Request items detail as rdf ttl
+#     :param data:
+#     :return:
+#     """
+#     LOGGER.info('request_items_detail')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#     data = {}
+#     data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
+#     LOGGER.info(data)
+#     LOGGER.info('request_items_detail finished')
+#     return jsonify(data)
+#
+# @app.route('/send_email', methods=['Post'])
+# def send_email(data=None):
+#     LOGGER.info('send_email')
+#     params = sj.loads(request.data)
+#
+#     LOGGER.info(params)
+#
+#     link = params['link']
+#     message = params['message']
+#
+#     send_problem_mail(link, message)
+#
+#     LOGGER.info('send_email finished')
+#     data = {}
+#     return jsonify(data)
+#
+# @app.route('/request_simple_view_catalog', methods=['Post'])
+# def request_simple_view_catalog(data=None):
+#     LOGGER.info('request_simple_view_catalog')
+#     params = sj.loads(request.data)
+#     LOGGER.info(params)
+#
+#     id = params['id']
+#
+#     data = DB_MANAGER.get_simple_view_catalog(id)
+#
+#     LOGGER.info('request_simple_view_catalog finished')
+#     return data
+#
+# @app.route('/request_simple_view_dataset', methods=['Post'])
+# def request_simple_view_dataset(data=None):
+#     LOGGER.info('request_simple_view_dataset')
+#     params = sj.loads(request.data)
+#     LOGGER.info(params)
+#
+#     id = params['id']
+#
+#     data = DB_MANAGER.get_simple_view_dataset(id)
+#
+#     LOGGER.info('request_simple_view_dataset finished')
+#     return data
+#
+# @app.route('/request_simple_view_distribution', methods=['Post'])
+# def request_simple_view_distribution(data=None):
+#     LOGGER.info('request_simple_view_distribution')
+#     params = sj.loads(request.data)
+#     LOGGER.info(params)
+#
+#     id = params['id']
+#
+#     data = DB_MANAGER.get_simple_view_distribution(id)
+#
+#     LOGGER.info('request_simple_view_distribution finished')
+#     return data
+#
+# @app.route('/request_simple_view_publisher', methods=['Post'])
+# def request_simple_view_publisher(data=None):
+#     LOGGER.info('request_simple_view_publisher')
+#     params = sj.loads(request.data)
+#     LOGGER.info(params)
+#
+#     id = params['id']
+#
+#     data = DB_MANAGER.get_simple_view_publisher(id)
+#
+#     LOGGER.info('request_simple_view_publisher finished')
+#     return data
 
 
 @app.route('/solr_search', methods=['Post'])
@@ -326,9 +326,32 @@ def solr_search(data=None):
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
     for token in query_tokens:
-        query_tokens_clean.append('suggest:*{}*'.format(token))
+        query_tokens_clean.append('search:*{}*'.format(token))
+
+    for facet_name, choices in params['choices'].items():
+        for choice in choices:
+            query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
     params['q'] = ' AND '.join(query_tokens_clean)
+
+    params['facet'] = 'true'
+    params['json.facet'] = sj.dumps({
+        'dct_publisher_facet': {
+            'terms': 'dct_publisher_facet'
+        },
+        'dct_license_facet': {
+            'terms': 'dct_license_facet'
+        },
+        'dct_format_facet': {
+            'terms': 'dct_format_facet'
+        },
+        'dcat_theme_facet': {
+            'terms': 'dcat_theme_facet'
+        },
+        'rdf_type': {
+            'terms': 'rdf_type'
+        },
+    })
 
     LOGGER.info('Query Solr:')
     LOGGER.info(params['q'])
@@ -338,6 +361,7 @@ def solr_search(data=None):
         data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
+    LOGGER.debug('Response {}'.format(result.content))
 
     LOGGER.debug('solr search finished')
 
@@ -355,7 +379,6 @@ def solr_suggest(data=None):
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
-
     LOGGER.debug('solr suggest finished')
     return result.content
 
@@ -366,13 +389,16 @@ def solr_pick(data=None):
     LOGGER.debug('solr pick')
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
+    id = params['q']
+    params['q'] = 'id:"{}"'.format(id)
 
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=sj.dumps(params),
+        data=sj.dumps({'params': params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
+    LOGGER.debug('Response {}'.format(result.content))
     LOGGER.debug('solr pick finished')
 
     return result.content
