@@ -1,8 +1,8 @@
 """Scheduler for Cronjobs"""
 import sys
 import time
-from traceback import format_tb
-
+import requests
+from requests.auth import HTTPBasicAuth
 import schedule
 from iso2dcat.solr.rdf2solr import main as solr_main
 from pkan.flask.log import LOGGER
