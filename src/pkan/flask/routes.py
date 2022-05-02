@@ -322,6 +322,8 @@ def solr_search(data=None):
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
 
+    sort = params['sort']
+
     query_str = params['q']
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
@@ -334,7 +336,12 @@ def solr_search(data=None):
 
     params['q'] = ' AND '.join(query_tokens_clean)
 
-    params['sort'] = 'score desc, inq_priority desc'
+    if sort == "score" :
+        params['sort'] = 'score desc, inq_priority desc'
+    elif sort == "asc":
+        params['sort'] = 'dct_title asc'
+    elif sort == "desc":
+        params['sort'] = 'dct_title desc'
 
     params['facet'] = 'true'
     params['json.facet'] = sj.dumps({
