@@ -365,32 +365,33 @@ def solr_search(data=None):
     """Wrapper between SOLR and the frontend"""
     LOGGER.debug('solr search')
     LOGGER.debug(request.data)
-    params = sj.loads(request.data)
+    in_params = sj.loads(request.data)
 
-    # ToDo Validation of input parameters
-    sort = params['sort']
+    out_params = {}
 
-    query_str = params['q']
+    sort = in_params['sort']
+    if sort == "score":
+        out_params['sort'] = 'score desc, inq_priority desc'
+    elif sort == "asc":
+        out_params['sort'] = 'sort asc'
+    elif sort == "desc":
+        out_params['sort'] = 'sort desc'
+
+    query_str = in_params['q']
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
     for token in query_tokens:
+        # ToDo filter all not german characters from token.
         query_tokens_clean.append('search:*{}*'.format(token))
 
-    for facet_name, choices in params['choices'].items():
+    for facet_name, choices in in_params['choices'].items():
         for choice in choices:
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
-    params['q'] = ' AND '.join(query_tokens_clean)
+    out_params['q'] = ' AND '.join(query_tokens_clean)
 
-    if sort == "score":
-        params['sort'] = 'score desc, inq_priority desc'
-    elif sort == "asc":
-        params['sort'] = 'sort asc'
-    elif sort == "desc":
-        params['sort'] = 'sort desc'
-
-    params['facet'] = 'true'
-    params['json.facet'] = sj.dumps({
+    out_params['facet'] = 'true'
+    out_params['json.facet'] = sj.dumps({
         'dct_publisher_facet': {
             'terms': 'dct_publisher_facet'
         },
@@ -408,12 +409,9 @@ def solr_search(data=None):
         },
     })
 
-    LOGGER.info('Query Solr:')
-    LOGGER.info(params['q'])
-
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=sj.dumps({'params': params}),
+        data=sj.dumps({'params': out_params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
     LOGGER.debug('Response {}'.format(result.content))
@@ -480,7 +478,7 @@ def solr_pick(data=None):
     LOGGER.debug('solr pick')
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
-    # ToDo Validation of input paramters
+    # ToDo Validation of input parameters
 
     id = params['q']
     params['q'] = 'id:"{}"'.format(id)
@@ -501,7 +499,7 @@ def solr_pick(data=None):
 def request_plone(data=None):
     LOGGER.debug('Plone Request')
 
-    # ToDo Validation of input paramters
+    # ToDo Validation of input parameters
 
     params = sj.loads(request.data)
     url = params['plone_url']
