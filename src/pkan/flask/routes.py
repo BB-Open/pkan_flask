@@ -386,7 +386,11 @@ def solr_search(data=None):
 
     for facet_name, choices in in_params['choices'].items():
         for choice in choices:
+            # ToDo filter all not german characters from choices.
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
+
+    out_params['start'] = int(in_params['start'])
+    out_params['rows'] = int(in_params['rows'])
 
     out_params['q'] = ' AND '.join(query_tokens_clean)
 
