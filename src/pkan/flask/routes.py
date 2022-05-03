@@ -7,6 +7,7 @@ import functools
 import logging
 import sys
 import traceback
+from pathlib import Path
 from urllib.request import urlopen
 
 import simplejson as sj
@@ -95,14 +96,23 @@ def return_files_tut():
     """
     params = {}
     # id empty means full export
-    params['id'] = request.args.get('id', default=None, type=str)
     params['format'] = request.args.get('format', default='rdf/xml', type=str)
-    params['type'] = request.args.get('type', default='tree', type=str)
-    # ignore on type tree, use on type graph
-    params['count'] = request.args.get('count', default='3', type=int)
-    file_path, file_name, _file, mimetype = DB_MANAGER.get_download_file(params)
+    download_name = cfg.DOWNLOAD_FILENAME
+    if params['format'] == 'rdf/json':
+        download_name += '.json'
+        mime_type = 'application/ld+json'
+    elif params['format'] == 'rdf/ttl':
+        download_name += '.ttl'
+        mime_type = 'text/turtle'
+    else:
+        download_name += '.rdf'
+        mime_type = 'application/rdf+xml'
+
+    file_path = Path(cfg.DOWNLOAD_DIR) / download_name
+
+    # file_path, file_name, _file, mimetype = DB_MANAGER.get_download_file(params)
     try:
-        return send_file(file_path, attachment_filename=file_name, mimetype=mimetype)
+        return send_file(file_path, attachment_filename=download_name, mimetype=mime_type)
     except Exception as e:
         return str(e)
 
