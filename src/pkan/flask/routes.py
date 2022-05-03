@@ -339,9 +339,9 @@ def solr_search(data=None):
     if sort == "score" :
         params['sort'] = 'score desc, inq_priority desc'
     elif sort == "asc":
-        params['sort'] = 'dct_title asc'
+        params['sort'] = 'sort asc'
     elif sort == "desc":
-        params['sort'] = 'dct_title desc'
+        params['sort'] = 'sort desc'
 
     params['facet'] = 'true'
     params['json.facet'] = sj.dumps({
