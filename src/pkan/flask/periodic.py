@@ -11,7 +11,6 @@ from pyrdf4j.rdf4j import RDF4J
 from requests.auth import HTTPBasicAuth
 import schedule
 from iso2dcat.solr.rdf2solr import main as solr_main
-from statsmodels.tsa.ardl._pss_critical_values.pss import PATH
 
 from pkan.flask.log import LOGGER
 from pkan_config.config import get_config
