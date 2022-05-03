@@ -332,6 +332,8 @@ def solr_search(data=None):
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
 
+    sort = params['sort']
+
     query_str = params['q']
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
@@ -343,6 +345,13 @@ def solr_search(data=None):
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
     params['q'] = ' AND '.join(query_tokens_clean)
+
+    if sort == "score" :
+        params['sort'] = 'score desc, inq_priority desc'
+    elif sort == "asc":
+        params['sort'] = 'dct_title asc'
+    elif sort == "desc":
+        params['sort'] = 'dct_title desc'
 
     params['facet'] = 'true'
     params['json.facet'] = sj.dumps({
@@ -391,6 +400,38 @@ def solr_suggest(data=None):
 
     LOGGER.debug('solr suggest finished')
     return result.content
+
+@app.route('/solr_suggest2', methods=['post'])
+def solr_suggest2(data=None):
+    """Minimal wrapper between SOLR and the frontend"""
+    LOGGER.debug('solr suggest')
+
+    result = requests.get(
+        cfg.SOLR_SUGGEST_URI,
+        data=request.data,
+        headers={"Content-type": "application/json; charset=utf-8"}
+    )
+    req_term = sj.loads(request.data)['params']['suggest.q']
+    data = sj.loads(result.content)
+    terms = [i['term'] for i in data['suggest']['mySuggester'][req_term]['suggestions']]
+    out_terms = []
+    for term in terms:
+        result = requests.post(
+           cfg.SOLR_SELECT_URI,
+            data=sj.dumps({'params': {'q': 'search:{}'.format(term)}}),
+            headers={"Content-type": "application/json; charset=utf-8"}
+        )
+        data = sj.loads(result.content)
+        if data['response']['numFound'] == 0:
+            out_terms.append(term)
+        else:
+            out_terms.append(data['response']['docs'][0])
+
+        a=10
+
+    LOGGER.debug('solr suggest finished')
+    return result.content
+
 
 
 @app.route('/solr_pick', methods=['Post'])
