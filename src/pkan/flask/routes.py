@@ -367,6 +367,7 @@ def solr_search(data=None):
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
 
+    # ToDo Validation of input parameters
     sort = params['sort']
 
     query_str = params['q']
@@ -427,6 +428,8 @@ def solr_suggest(data=None):
     """Minimal wrapper between SOLR and the frontend"""
     LOGGER.debug('solr suggest')
 
+    # ToDo Validation of input parameters
+
     result = requests.get(
         cfg.SOLR_SUGGEST_URI,
         data=request.data,
@@ -441,6 +444,8 @@ def solr_suggest(data=None):
 def solr_suggest2(data=None):
     """Minimal wrapper between SOLR and the frontend"""
     LOGGER.debug('solr suggest')
+
+    # ToDo Validation of input parameters
 
     result = requests.get(
         cfg.SOLR_SUGGEST_URI,
@@ -475,6 +480,8 @@ def solr_pick(data=None):
     LOGGER.debug('solr pick')
     LOGGER.debug(request.data)
     params = sj.loads(request.data)
+    # ToDo Validation of input paramters
+
     id = params['q']
     params['q'] = 'id:"{}"'.format(id)
 
@@ -493,6 +500,9 @@ def solr_pick(data=None):
 @app.route('/request_plone', methods=['POST'])
 def request_plone(data=None):
     LOGGER.debug('Plone Request')
+
+    # ToDo Validation of input paramters
+
     params = sj.loads(request.data)
     url = params['plone_url']
 
