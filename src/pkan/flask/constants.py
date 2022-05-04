@@ -51,7 +51,8 @@ ALLOWED_CHARS_FACET = ''.join((
     re.escape(','),
     re.escape('.'),
     re.escape('('),
-    re.escape(')')
+    re.escape(')'),
+    re.escape('/'),
 ))
 
 REGEX_QUERY = re.compile(r"[^" + ALLOWED_CHARS_QUERY + r"]")
