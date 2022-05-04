@@ -502,10 +502,15 @@ def solr_pick(data=None):
 @app.route('/request_plone', methods=['POST'])
 def request_plone(data=None):
     LOGGER.debug('Plone Request')
-
-    # ToDo Validation of input parameters
-
     params = sj.loads(request.data)
-    url = params['plone_url']
+    # use configured Base Url, User can just request already open Plone RestAPI
+    url = cfg.PLONE_REST_API_QUERY_URL
+
+    LOGGER.debug(params)
+
+    for param in params:
+        url += '&' + param + '=' + str(params[param])
+
+    LOGGER.debug(url)
 
     return get_plone_url(url)
