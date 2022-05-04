@@ -1,6 +1,7 @@
 """
 Default Config for Pkan Flask
 """
+import re
 import string
 
 INTERNAL_SERVER_ERROR = 500
@@ -35,10 +36,24 @@ ALL_PREFIXES = [
     'vcard: <http://www.w3.org/2006/vcard/ns#>',
 ]
 
-ALLOWED_CHARS_QUERY = ' äöüÄÖÜ-_{lower}{upper}{digits}'.format(
-    upper=string.ascii_uppercase,
-    lower=string.ascii_lowercase,
-    digits=string.digits
-)
+ALLOWED_CHARS_QUERY = ''.join((
+    re.escape(' '),
+    re.escape('-'),
+    re.escape('_'),
+    'A-Z',
+    'a-z',
+    '0-9',
+    'äöüÄÖÜ'
+))
+
+ALLOWED_CHARS_FACET = ''.join((
+    ALLOWED_CHARS_QUERY,
+    re.escape(','),
+    re.escape('.'),
+    re.escape('('),
+    re.escape(')')
+))
+
+REGEX_QUERY = re.compile(r"[^" + ALLOWED_CHARS_QUERY + r"]")
 # there are some additional characters allowed in facets
-ALLOWED_CHARS_FACET = ',.()' + ALLOWED_CHARS_QUERY
+REGEX_FACET = re.compile(r"[^" + ALLOWED_CHARS_FACET + r"]")

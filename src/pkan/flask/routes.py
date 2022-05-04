@@ -21,8 +21,8 @@ from pkan.flask.constants import INTERNAL_SERVER_ERROR, \
     INTERNAL_SERVER_ERROR_MSG, \
     REQUEST_OK, \
     EMAIL_TEMPLATE, \
-    ALLOWED_CHARS_QUERY, \
-    ALLOWED_CHARS_FACET
+    REGEX_FACET, \
+    REGEX_QUERY
 from pkan.flask.log import LOGGER
 
 register_config(env='Production')
@@ -192,9 +192,8 @@ def solr_search(data=None):
         out_params['sort'] = 'score desc, inq_priority desc'
 
     query_str = in_params['q']
-    LOGGER.debug(ALLOWED_CHARS_QUERY)
     # todo: is this efficient?
-    query_str = ''.join([i for i in query_str if i in ALLOWED_CHARS_QUERY])
+    query_str = REGEX_QUERY.sub('', query_str)
     LOGGER.debug(query_str)
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
@@ -203,7 +202,7 @@ def solr_search(data=None):
 
     for facet_name, choices in in_params['choices'].items():
         for choice in choices:
-            choice = ''.join([i for i in choice if i in ALLOWED_CHARS_FACET])
+            choice = REGEX_FACET.sub('', choice)
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
     out_params['start'] = int(in_params['start'])
@@ -253,7 +252,7 @@ def solr_suggest(data=None):
 
     suggest_q = in_params['params']['suggest.q']
 
-    suggest_q = ''.join([i for i in suggest_q if i in ALLOWED_CHARS_QUERY])
+    suggest_q = REGEX_QUERY.sub('', suggest_q)
 
     out_params = {'params': {'suggest.q': suggest_q}}
 
