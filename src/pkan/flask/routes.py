@@ -180,19 +180,21 @@ def solr_search(data=None):
 
     out_params = {}
 
-    sort = in_params['sort']
-    if sort == "score":
-        out_params['sort'] = 'score desc, inq_priority desc'
-    elif sort == "asc":
-        out_params['sort'] = 'sort asc'
-    elif sort == "desc":
-        out_params['sort'] = 'sort desc'
+    if 'sort' in in_params:
+        sort = in_params['sort']
+        if sort == "score":
+            out_params['sort'] = 'score desc, inq_priority desc'
+        elif sort == "asc":
+            out_params['sort'] = 'sort asc'
+        elif sort == "desc":
+            out_params['sort'] = 'sort desc'
+        else:
+            # standard Fallback
+            out_params['sort'] = 'score desc, inq_priority desc'
     else:
-        # standard Fallback
         out_params['sort'] = 'score desc, inq_priority desc'
 
     query_str = in_params['q']
-    # todo: is this efficient?
     query_str = REGEX_QUERY.sub('', query_str)
     LOGGER.debug(query_str)
     query_tokens = query_str.split(' ')
