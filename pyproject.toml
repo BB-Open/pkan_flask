@@ -21,6 +21,7 @@ schedule = "^1.1.0"
 colorlog = "^6.5.0"
 
 [tool.poetry.dev-dependencies]
+pycodestyle = "^2.8.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

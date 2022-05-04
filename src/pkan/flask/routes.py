@@ -17,9 +17,13 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from pkan_config.config import register_config, get_config
 
-from pkan.flask.constants import INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG, REQUEST_OK, EMAIL_TEMPLATE
+from pkan.flask.constants import INTERNAL_SERVER_ERROR, \
+    INTERNAL_SERVER_ERROR_MSG, \
+    REQUEST_OK, \
+    EMAIL_TEMPLATE, \
+    ALLOWED_CHARS_QUERY, \
+    ALLOWED_CHARS_FACET
 from pkan.flask.log import LOGGER
-from pkan.flask.sparql_db import DBManager
 
 register_config(env='Production')
 cfg = get_config()
@@ -29,8 +33,6 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 app = Flask(__name__)
 
 CORS(app, resources={r"*": {"origins": "*"}})
-
-DB_MANAGER = DBManager()
 
 app.config.update({
     'MAIL_USERNAME': cfg.MAIL_USERNAME,
@@ -60,7 +62,9 @@ def pkan_status(f):
             res_data['response_code'] = INTERNAL_SERVER_ERROR
             res_data['error_message'] = INTERNAL_SERVER_ERROR_MSG
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            LOGGER.error("Request failed with Error %s %s ", exc_type, exc_value)
+            LOGGER.error("Request failed with Error %s %s ",
+                         exc_type,
+                         exc_value)
             for line in traceback.format_tb(exc_traceback):
                 LOGGER.error("%s", line[:-1])
         return (sj.dumps(res_data))
@@ -143,153 +147,14 @@ def return_files_tut():
 
     file_path = Path(cfg.DOWNLOAD_DIR) / download_name
 
-    # file_path, file_name, _file, mimetype = DB_MANAGER.get_download_file(params)
     try:
-        return send_file(file_path, attachment_filename=download_name, mimetype=mime_type)
+        return send_file(file_path,
+                         attachment_filename=download_name,
+                         mimetype=mime_type)
     except Exception as e:
         return str(e)
 
 
-# # DATA OBJECTS
-#
-# @app.route('/request_vocab', methods=['POST'])
-# def request_vocab(data=None):
-#     """
-#     Request a vocabulary for selecting in frontend
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request')
-#     params = sj.loads(request.data)
-#     LOGGER.info(params)
-#     data = {}
-#
-#     vocab = params['vocab']
-#
-#     if vocab == 'category':
-#         data['vocab'] = DB_MANAGER.get_category_vocab()
-#     elif vocab == 'file_format':
-#         data['vocab'] = DB_MANAGER.get_file_format_vocab()
-#     elif vocab == 'license':
-#         data['vocab'] = DB_MANAGER.get_license_vocab()
-#     elif vocab == 'publisher':
-#         data['vocab'] = DB_MANAGER.get_publisher_vocab()
-#     else:
-#         data['vocab'] = DB_MANAGER.get_sorting_options()
-#     LOGGER.info('request %s finished', params)
-#     LOGGER.info('response is %s ', data)
-#     return jsonify(data)
-#
-#
-# @app.route('/request_search_results', methods=['POST'])
-# def request_search_results(data=None):
-#     """
-#     Request results of current search
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request_search_results')
-#     params = sj.loads(request.data)
-#
-#     LOGGER.info(params)
-#     data = {}
-#     try:
-#         data['results'], data['result_count'] = DB_MANAGER.get_search_results(params)
-#     except Exception as _e:
-#         exc_type, exc_value, exc_traceback = sys.exc_info()
-#         LOGGER.error("Failed with Error %s %s ",
-#                      exc_type, exc_value)
-#         for line in traceback.format_tb(exc_traceback):
-#             LOGGER.error("Trace: %s", line[:-1])
-#         # ToDo: Fix unspecified Exception catch
-#         data['results'], data['result_count'] = [], 0
-#     data['batch_start'] = params['batch_start']
-#     data['batch_end'] = params['batch_end']
-#     LOGGER.info('request_search_results finished: %s ', data)
-#     return jsonify(data)
-#
-# @app.route('/request_search_results_sparql', methods=['POST'])
-# def request_search_results_sparql(data=None):
-#     """
-#     Request results of current search
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request_search_results_sparql')
-#     params = sj.loads(request.data)
-#
-#     LOGGER.info(params)
-#     data = {}
-#     data['results'], data['result_count'], data['error_message'] = \
-#         DB_MANAGER.get_search_results_sparql(params)
-#     if data['error_message']:
-#         LOGGER.info(data['error_message'])
-#         data['response_code'] = BAD_REQUEST
-#     data['batch_start'] = params['batch_start']
-#     data['batch_end'] = params['batch_end']
-#     LOGGER.info('request_search_results_sparql finished')
-#     return jsonify(data)
-#
-#
-# @app.route('/request_items_title_desc', methods=['POST'])
-# def request_items_title_desc(data=None):
-#     """
-#     Request title and description of a dcat element
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request_items_title_desc')
-#     params = sj.loads(request.data)
-#
-#     LOGGER.info(params)
-#     data = {}
-#     obj_id = params['id']
-#     data['title'] = DB_MANAGER.get_title(obj_id)
-#     data['description'] = DB_MANAGER.get_description(obj_id)
-#     data['type'] = DB_MANAGER.get_type(obj_id)
-#     data['id'] = obj_id
-#     LOGGER.info('request_items_title_desc finished')
-#     return jsonify(data)
-#
-#
-# @app.route('/request_label', methods=['POST'])
-# def request_label(data=None):
-#     """
-#     Request title for a field label
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request label')
-#     params = sj.loads(request.data)
-#
-#     LOGGER.info(params)
-#     data = {}
-#
-#     obj_id = params['id']
-#
-#     data['label'] = DB_MANAGER.get_field_label(obj_id)
-#     data['id'] = obj_id
-#     LOGGER.info('request label finished')
-#     return jsonify(data)
-#
-#
-# @app.route('/request_items_detail', methods=['POST'])
-# def request_items_detail(data=None):
-#     """
-#     Request items detail as rdf ttl
-#     :param data:
-#     :return:
-#     """
-#     LOGGER.info('request_items_detail')
-#     params = sj.loads(request.data)
-#
-#     LOGGER.info(params)
-#     data = {}
-#     data['rdf_ttl'] = DB_MANAGER.get_items_detail(params['id'])
-#     LOGGER.info(data)
-#     LOGGER.info('request_items_detail finished')
-#     return jsonify(data)
-#
 @app.route('/send_email', methods=['Post'])
 def send_email(data=None):
     LOGGER.info('send_email')
@@ -304,60 +169,6 @@ def send_email(data=None):
     LOGGER.info('send_email finished')
     data = {}
     return jsonify(data)
-
-
-#
-# @app.route('/request_simple_view_catalog', methods=['Post'])
-# def request_simple_view_catalog(data=None):
-#     LOGGER.info('request_simple_view_catalog')
-#     params = sj.loads(request.data)
-#     LOGGER.info(params)
-#
-#     id = params['id']
-#
-#     data = DB_MANAGER.get_simple_view_catalog(id)
-#
-#     LOGGER.info('request_simple_view_catalog finished')
-#     return data
-#
-# @app.route('/request_simple_view_dataset', methods=['Post'])
-# def request_simple_view_dataset(data=None):
-#     LOGGER.info('request_simple_view_dataset')
-#     params = sj.loads(request.data)
-#     LOGGER.info(params)
-#
-#     id = params['id']
-#
-#     data = DB_MANAGER.get_simple_view_dataset(id)
-#
-#     LOGGER.info('request_simple_view_dataset finished')
-#     return data
-#
-# @app.route('/request_simple_view_distribution', methods=['Post'])
-# def request_simple_view_distribution(data=None):
-#     LOGGER.info('request_simple_view_distribution')
-#     params = sj.loads(request.data)
-#     LOGGER.info(params)
-#
-#     id = params['id']
-#
-#     data = DB_MANAGER.get_simple_view_distribution(id)
-#
-#     LOGGER.info('request_simple_view_distribution finished')
-#     return data
-#
-# @app.route('/request_simple_view_publisher', methods=['Post'])
-# def request_simple_view_publisher(data=None):
-#     LOGGER.info('request_simple_view_publisher')
-#     params = sj.loads(request.data)
-#     LOGGER.info(params)
-#
-#     id = params['id']
-#
-#     data = DB_MANAGER.get_simple_view_publisher(id)
-#
-#     LOGGER.info('request_simple_view_publisher finished')
-#     return data
 
 
 @app.route('/solr_search', methods=['Post'])
@@ -376,17 +187,23 @@ def solr_search(data=None):
         out_params['sort'] = 'sort asc'
     elif sort == "desc":
         out_params['sort'] = 'sort desc'
+    else:
+        # standard Fallback
+        out_params['sort'] = 'score desc, inq_priority desc'
 
     query_str = in_params['q']
+    LOGGER.debug(ALLOWED_CHARS_QUERY)
+    # todo: is this efficient?
+    query_str = ''.join([i for i in query_str if i in ALLOWED_CHARS_QUERY])
+    LOGGER.debug(query_str)
     query_tokens = query_str.split(' ')
     query_tokens_clean = []
     for token in query_tokens:
-        # ToDo filter all not german characters from token.
         query_tokens_clean.append('search:*{}*'.format(token))
 
     for facet_name, choices in in_params['choices'].items():
         for choice in choices:
-            # ToDo filter all not german characters from choices.
+            choice = ''.join([i for i in choice if i in ALLOWED_CHARS_FACET])
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
     out_params['start'] = int(in_params['start'])
@@ -430,47 +247,23 @@ def solr_suggest(data=None):
     """Minimal wrapper between SOLR and the frontend"""
     LOGGER.debug('solr suggest')
 
-    # ToDo Validation of input parameters
+    in_params = sj.loads(request.data)
+
+    LOGGER.debug(in_params)
+
+    suggest_q = in_params['params']['suggest.q']
+
+    suggest_q = ''.join([i for i in suggest_q if i in ALLOWED_CHARS_QUERY])
+
+    out_params = {'params': {'suggest.q': suggest_q}}
+
+    LOGGER.debug(out_params)
 
     result = requests.get(
         cfg.SOLR_SUGGEST_URI,
-        data=request.data,
+        data=sj.dumps(out_params),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
-
-    LOGGER.debug('solr suggest finished')
-    return result.content
-
-
-@app.route('/solr_suggest2', methods=['post'])
-def solr_suggest2(data=None):
-    """Minimal wrapper between SOLR and the frontend"""
-    LOGGER.debug('solr suggest')
-
-    # ToDo Validation of input parameters
-
-    result = requests.get(
-        cfg.SOLR_SUGGEST_URI,
-        data=request.data,
-        headers={"Content-type": "application/json; charset=utf-8"}
-    )
-    req_term = sj.loads(request.data)['params']['suggest.q']
-    data = sj.loads(result.content)
-    terms = [i['term'] for i in data['suggest']['mySuggester'][req_term]['suggestions']]
-    out_terms = []
-    for term in terms:
-        result = requests.post(
-            cfg.SOLR_SELECT_URI,
-            data=sj.dumps({'params': {'q': 'search:{}'.format(term)}}),
-            headers={"Content-type": "application/json; charset=utf-8"}
-        )
-        data = sj.loads(result.content)
-        if data['response']['numFound'] == 0:
-            out_terms.append(term)
-        else:
-            out_terms.append(data['response']['docs'][0])
-
-        a = 10
 
     LOGGER.debug('solr suggest finished')
     return result.content
@@ -481,15 +274,18 @@ def solr_pick(data=None):
     """Wrapper between SOLR and the frontend"""
     LOGGER.debug('solr pick')
     LOGGER.debug(request.data)
-    params = sj.loads(request.data)
-    # ToDo Validation of input parameters
+    in_params = sj.loads(request.data)
 
-    id = params['q']
-    params['q'] = 'id:"{}"'.format(id)
+    id = in_params['q']
+
+    LOGGER.debug(in_params)
+    out_params = {'q': 'id:"{}"'.format(id)}
+
+    LOGGER.debug(out_params)
 
     result = requests.post(
         cfg.SOLR_SELECT_URI,
-        data=sj.dumps({'params': params}),
+        data=sj.dumps({'params': out_params}),
         headers={"Content-type": "application/json; charset=utf-8"}
     )
 
@@ -503,13 +299,14 @@ def solr_pick(data=None):
 def request_plone(data=None):
     LOGGER.debug('Plone Request')
     params = sj.loads(request.data)
-    # use configured Base Url, User can just request already open Plone RestAPI
+    # use configured Base Url,
+    # User can just request already open Plone RestAPI as unauthenticated user
     url = cfg.PLONE_REST_API_QUERY_URL
 
     LOGGER.debug(params)
 
     for param in params:
-        url += '&' + param + '=' + str(params[param])
+        url += '&{param}={value}'.format(param=param, value=params[param])
 
     LOGGER.debug(url)
 

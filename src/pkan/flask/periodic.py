@@ -16,12 +16,12 @@ from pkan.flask.log import LOGGER
 from pkan_config.config import get_config
 import pkan.flask.constants as const
 
-
 FORMATS = {
     'application/rdf+json': '.json',
     'application/x-turtle': '.ttl',
     'application/rdf+xml': '.rdf'
 }
+
 
 def download_file():
     cfg = get_config()
@@ -35,8 +35,10 @@ def download_file():
             LOGGER.info('Working on ' + mime_type)
             file = tempfile.NamedTemporaryFile()
             query = prefixes + '\nCONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }'
-            data = rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE, query, mime_type=mime_type,
-                                                         auth=auth)
+            data = rdf4j.get_triple_data_from_query(cfg.PLONE_DCAT_NAMESPACE,
+                                                    query,
+                                                    mime_type=mime_type,
+                                                    auth=auth)
             file.write(data)
             file.flush()
             shutil.copyfile(file.name, str(path) + FORMATS[mime_type])
@@ -59,16 +61,27 @@ def plone_harvest():
 
     LOGGER.info('Initiate harvesting')
     try:
-        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+        response = requests.get(cfg.HARVEST_URL,
+                                auth=HTTPBasicAuth(
+                                    cfg.HARVEST_USER,
+                                    cfg.HARVEST_PASS
+                                )
+                                )
     except requests.exceptions.ConnectionError:
         # retry one time
-        response = requests.get(cfg.HARVEST_URL, auth=HTTPBasicAuth(cfg.HARVEST_USER, cfg.HARVEST_PASS))
+        response = requests.get(cfg.HARVEST_URL,
+                                auth=HTTPBasicAuth(
+                                    cfg.HARVEST_USER,
+                                    cfg.HARVEST_PASS
+                                )
+                                )
     #
     if response.status_code == 200:
         LOGGER.info('Harvesting initiated')
         LOGGER.info('Harvesting Response is: %s', response)
     else:
-        LOGGER.warning('Failed to initiate Harvesting. Error Code: %s', response)
+        LOGGER.warning('Failed to initiate Harvesting. Error Code: %s',
+                       response)
 
     LOGGER.info('Start Solr Export')
     try:
