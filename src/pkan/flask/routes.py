@@ -4,6 +4,7 @@
 
 import functools
 import logging
+import pprint
 import sys
 import traceback
 from datetime import timedelta, datetime
@@ -175,8 +176,9 @@ def send_email(data=None):
 def solr_search(data=None):
     """Wrapper between SOLR and the frontend"""
     LOGGER.debug('solr search')
-    LOGGER.debug(request.data)
+    LOGGER.debug('request_data_json: ' + pprint.pformat(request.data))
     in_params = sj.loads(request.data)
+    LOGGER.debug('request_data:' + pprint.pformat(in_params))
 
     out_params = {}
 
@@ -230,6 +232,7 @@ def solr_search(data=None):
             'terms': 'rdf_type'
         },
     })
+    LOGGER.debug('solr_param:' + pprint.pformat(out_params))
 
     result = requests.post(
         cfg.SOLR_SELECT_URI,
