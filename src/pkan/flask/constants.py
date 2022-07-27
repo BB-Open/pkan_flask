@@ -38,7 +38,8 @@ ALL_PREFIXES = [
 
 ALLOWED_CHARS_QUERY = ''.join((
     re.escape(' '),
-    re.escape('-'),
+    re.escape('-'),  # short dash
+    re.escape('–'),  # long dash
     re.escape('_'),
     'A-Z',
     'a-z',
@@ -53,7 +54,6 @@ ALLOWED_CHARS_FACET = ''.join((
     re.escape('('),
     re.escape(')'),
     re.escape('/'),
-    re.escape('–'),  # long dash
 
 ))
 
