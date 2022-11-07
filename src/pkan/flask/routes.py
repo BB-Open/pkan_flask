@@ -5,6 +5,7 @@
 import functools
 import logging
 import pprint
+import random
 import sys
 import traceback
 from datetime import timedelta, datetime
@@ -315,3 +316,29 @@ def request_plone(data=None):
     LOGGER.debug(url)
 
     return get_plone_url(url)
+
+
+@app.route('/solr_roulette', methods=['POST'])
+def request_solr_roulette(data=None):
+    LOGGER.debug('Solr Roulette Request')
+
+    # this integer generates a random sort order
+    random_int = random.randint(0, 100000)
+
+    data = {
+      "q":"inq_priority:100\ndct_title:/.{10}.*/\ndct_description:/.{10}.*/\ndct_title_lang:de\ndct_description_lang:de",
+      "q.op":"AND",
+      "sort":f"random_{random_int} desc",
+      "rows":"1",
+    }
+
+    result = requests.post(
+        cfg.SOLR_SELECT_URI,
+        data=sj.dumps({'params': data}),
+        headers = {"Content-type": "application/json; charset=utf-8"}
+    )
+
+    LOGGER.debug('Response {}'.format(result.content))
+    LOGGER.debug('solr pick finished')
+
+    return result.content
