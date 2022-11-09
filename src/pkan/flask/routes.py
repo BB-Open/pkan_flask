@@ -322,8 +322,7 @@ def request_plone(data=None):
 def request_solr_roulette(data=None):
     LOGGER.debug('Solr Roulette Request')
 
-    # this integer generates a random sort order
-    random_int = random.randint(0, 100000)
+    random_int = int(data.random_int)
 
     data = {
       "q":"inq_priority:100\ndct_title:/.{10}.*/\ndct_description:/.{10}.*/\ndct_title_lang:de\ndct_description_lang:de",
