@@ -7,14 +7,15 @@ from pathlib import Path
 from traceback import format_tb
 
 import requests
-from pyrdf4j.rdf4j import RDF4J
-from requests.auth import HTTPBasicAuth
 import schedule
 from iso2dcat.solr.rdf2solr import main as solr_main
-
-from pkan.flask.log import LOGGER
 from pkan_config.config import get_config
+from pyrdf4j.rdf4j import RDF4J
+from requests.auth import HTTPBasicAuth
+from shacl.shacl_db import fill_shacl_db
+
 import pkan.flask.constants as const
+from pkan.flask.log import LOGGER
 
 FORMATS = {
     'application/rdf+json': '.json',
@@ -134,5 +135,8 @@ def start_scheduler():
     LOGGER.info('Scheduler loop started')
 
 
+LOGGER.info('Filling Shacl Stores')
+fill_shacl_db()
+LOGGER.info('Filled Shacl Stores')
 plone_harvest()
 start_scheduler()
