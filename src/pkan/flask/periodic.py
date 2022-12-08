@@ -10,6 +10,7 @@ import requests
 import schedule
 from iso2dcat.solr.rdf2solr import main as solr_main
 from pkan_config.config import get_config
+from pkan_config.namespaces import NAMESPACES
 from pyrdf4j.rdf4j import RDF4J
 from requests.auth import HTTPBasicAuth
 from shacl.shacl_db import fill_shacl_db
@@ -27,7 +28,10 @@ FORMATS = {
 def download_file():
     cfg = get_config()
     rdf4j = RDF4J(rdf4j_base=cfg.RDF4J_BASE)
-    prefixes = 'PREFIX ' + '\nPREFIX '.join(const.ALL_PREFIXES)
+    prefixes = []
+    for short, uri in NAMESPACES.items():
+        prefixes.append(f"{short}: <{uri}>")
+    prefixes = 'PREFIX ' + '\nPREFIX '.join(prefixes)
     auth = HTTPBasicAuth(cfg.VIEWER_USER, cfg.VIEWER_PASS)
     path = Path(cfg.DOWNLOAD_DIR) / cfg.DOWNLOAD_FILENAME
 
@@ -70,14 +74,17 @@ def plone_harvest():
                                 )
     except requests.exceptions.ConnectionError:
         # retry one time
-        response = requests.get(cfg.HARVEST_URL,
-                                auth=HTTPBasicAuth(
-                                    cfg.HARVEST_USER,
-                                    cfg.HARVEST_PASS
-                                )
-                                )
+        try:
+            response = requests.get(cfg.HARVEST_URL,
+                                    auth=HTTPBasicAuth(
+                                        cfg.HARVEST_USER,
+                                        cfg.HARVEST_PASS
+                                    )
+                                    )
+        except requests.exceptions.ConnectionError:
+            response = None
     #
-    if response.status_code == 200:
+    if response and response.status_code == 200:
         LOGGER.info('Harvesting initiated')
         LOGGER.info('Harvesting Response is: %s', response)
     else:
