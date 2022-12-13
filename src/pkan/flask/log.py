@@ -52,7 +52,7 @@ except ImportError as exc:
         "%Y-%m-%d %H:%M:%S")
 
 ROT_FILE_HANDLER = TimedRotatingFileHandler(
-    cfg.PKAN_LOG_FILE, "D", 1, 15)
+    cfg.PKAN_LOG_FILE, "D", 1, 5)
 FILE_HANDLER_FORMATTER = FORMATTER
 ROT_FILE_HANDLER.setFormatter(FILE_HANDLER_FORMATTER)
 ROT_FILE_HANDLER.setLevel(cfg.LOG_LEVEL_FILE)
