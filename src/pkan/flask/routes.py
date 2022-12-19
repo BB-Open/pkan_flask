@@ -151,7 +151,7 @@ def return_files_tut():
 
     try:
         return send_file(file_path,
-                         attachment_filename=download_name,
+                         download_name=download_name,
                          mimetype=mime_type)
     except Exception as e:
         return str(e)
