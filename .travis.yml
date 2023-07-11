@@ -9,12 +9,12 @@ before_script:
 install:
   - pip install -r requirements/dev.txt
   - python setup.py develop
-  - git clone https://github.com/BB-Open/pkan.blazegraph.git
-  - cd pkan.blazegraph
+  - git clone https://github.com/BB-Open/pkan_flask.blazegraph.git
+  - cd pkan_flask.blazegraph
   - python setup.py develop
 
 script:
-  - pylint src/pkan --output-format=text --disable=R,C0103,W0511,W0703,C0325 # disable Refacturing hints
+  - pylint src/pkan_flask --output-format=text --disable=R,C0103,W0511,W0703,C0325 # disable Refacturing hints
 
 after_success:
   - codecov

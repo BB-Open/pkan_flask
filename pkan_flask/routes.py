@@ -19,13 +19,13 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from pkan_config.config import register_config, get_config
 
-from pkan.flask.constants import INTERNAL_SERVER_ERROR, \
+from pkan_flask.constants import INTERNAL_SERVER_ERROR, \
     INTERNAL_SERVER_ERROR_MSG, \
     REQUEST_OK, \
     EMAIL_TEMPLATE, \
     REGEX_FACET, \
     REGEX_QUERY
-from pkan.flask.log import LOGGER
+from pkan_flask.log import LOGGER
 
 register_config(env='Production')
 cfg = get_config()

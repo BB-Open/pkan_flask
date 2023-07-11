@@ -15,8 +15,8 @@ from pyrdf4j.rdf4j import RDF4J
 from requests.auth import HTTPBasicAuth
 from shacl.shacl_db import fill_shacl_db
 
-import pkan.flask.constants as const
-from pkan.flask.log import LOGGER
+import pkan_flask.constants as const
+from pkan_flask.log import LOGGER
 
 FORMATS = {
     'application/rdf+json': '.json',
