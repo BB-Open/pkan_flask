@@ -20,6 +20,7 @@ colorlog = "^6.5.0"
 
 [tool.poetry.dev-dependencies]
 pycodestyle = "^2.8.0"
+pytest = "^5.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
