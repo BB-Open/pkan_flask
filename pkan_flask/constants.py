@@ -2,7 +2,6 @@
 Default Config for Pkan Flask
 """
 import re
-import string
 
 INTERNAL_SERVER_ERROR = 500
 INTERNAL_SERVER_ERROR_MSG = 'Es gab einen internen Serverfehler. ' \

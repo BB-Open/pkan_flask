@@ -6,6 +6,7 @@ import sys
 from logging import StreamHandler, getLogger, Formatter, DEBUG
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
+
 from pkan_config.config import get_config, register_config
 
 register_config(env='Production')

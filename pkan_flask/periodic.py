@@ -15,7 +15,6 @@ from pyrdf4j.rdf4j import RDF4J
 from requests.auth import HTTPBasicAuth
 from shacl.shacl_db import fill_shacl_db
 
-import pkan_flask.constants as const
 from pkan_flask.log import LOGGER
 
 FORMATS = {
