@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["sandra <sandra.rum@inqbus.de>"]
 packages = [
-    { include = "pkan", from = "src/" },
+    { include = "pkan" },
 ]
 
 [tool.poetry.dependencies]
