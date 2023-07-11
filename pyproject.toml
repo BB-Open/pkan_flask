@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pkan.flask"
+name = "pkan_flask"
 version = "0.1.0"
 description = ""
 authors = ["sandra <sandra.rum@inqbus.de>"]
