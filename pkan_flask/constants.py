@@ -27,7 +27,7 @@ ALLOWED_CHARS_QUERY = ''.join((
     'A-Z',
     'a-z',
     '0-9',
-    'äöüÄÖÜ'
+    'äöüÄÖÜß',
 ))
 
 ALLOWED_CHARS_FACET = ''.join((
