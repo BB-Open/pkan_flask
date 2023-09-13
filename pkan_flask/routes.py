@@ -83,7 +83,7 @@ def send_problem_mail(link, message):
 
     message = Message(subject)
 
-    message.recipients = [cfg.MAIL_RECIPIENTS]
+    message.recipients = cfg.MAIL_RECIPIENTS
     message.sender = cfg.MAIL_SENDER
 
     message.body = body
