@@ -23,7 +23,7 @@ from pkan_flask.constants import INTERNAL_SERVER_ERROR, \
     REQUEST_OK, \
     EMAIL_TEMPLATE, \
     REGEX_FACET, \
-    REGEX_QUERY
+    REGEX_QUERY, FACET_LIMIT, FACET_LIMIT_PUBLISHER
 from pkan_flask.log import LOGGER
 
 register_config(env='Production')
@@ -217,19 +217,24 @@ def solr_search(data=None):
     out_params['facet'] = 'true'
     out_params['json.facet'] = sj.dumps({
         'dct_publisher_facet': {
-            'terms': 'dct_publisher_facet'
+            'terms': {'field': 'dct_publisher_facet',
+                      'limit': FACET_LIMIT_PUBLISHER},
         },
         'dct_license_facet': {
-            'terms': 'dct_license_facet'
+            'terms': {'field': 'dct_license_facet',
+                      'limit': FACET_LIMIT}
         },
         'dct_format_facet': {
-            'terms': 'dct_format_facet'
+            'terms': {'field': 'dct_format_facet',
+                      'limit': FACET_LIMIT}
         },
         'dcat_theme_facet': {
-            'terms': 'dcat_theme_facet'
+            'terms': {'field': 'dcat_theme_facet',
+                      'limit': FACET_LIMIT}
         },
         'rdf_type': {
-            'terms': 'rdf_type'
+            'terms': {'field': 'rdf_type',
+                      'limit': FACET_LIMIT}
         },
     })
     LOGGER.debug('solr_param:' + pprint.pformat(out_params))

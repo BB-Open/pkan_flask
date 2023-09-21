@@ -43,3 +43,6 @@ ALLOWED_CHARS_FACET = ''.join((
 REGEX_QUERY = re.compile(r"[^" + ALLOWED_CHARS_QUERY + r"]")
 # there are some additional characters allowed in facets
 REGEX_FACET = re.compile(r"[^" + ALLOWED_CHARS_FACET + r"]")
+
+FACET_LIMIT = 10
+FACET_LIMIT_PUBLISHER = 100
