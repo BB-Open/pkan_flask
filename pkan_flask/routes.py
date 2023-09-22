@@ -23,7 +23,8 @@ from pkan_flask.constants import INTERNAL_SERVER_ERROR, \
     REQUEST_OK, \
     EMAIL_TEMPLATE, \
     REGEX_FACET, \
-    REGEX_QUERY, FACET_LIMIT, FACET_LIMIT_PUBLISHER
+    REGEX_QUERY, FACET_LIMIT, FACET_LIMIT_PUBLISHER, FACET_LIMIT_LICENSE, FACET_LIMIT_FORMAT, FACET_LIMIT_THEME, \
+    FACET_LIMIT_TYPE
 from pkan_flask.log import LOGGER
 
 register_config(env='Production')
@@ -222,19 +223,19 @@ def solr_search(data=None):
         },
         'dct_license_facet': {
             'terms': {'field': 'dct_license_facet',
-                      'limit': FACET_LIMIT}
+                      'limit': FACET_LIMIT_LICENSE}
         },
         'dct_format_facet': {
             'terms': {'field': 'dct_format_facet',
-                      'limit': FACET_LIMIT}
+                      'limit': FACET_LIMIT_FORMAT}
         },
         'dcat_theme_facet': {
             'terms': {'field': 'dcat_theme_facet',
-                      'limit': FACET_LIMIT}
+                      'limit': FACET_LIMIT_THEME}
         },
         'rdf_type': {
             'terms': {'field': 'rdf_type',
-                      'limit': FACET_LIMIT}
+                      'limit': FACET_LIMIT_TYPE}
         },
     })
     LOGGER.debug('solr_param:' + pprint.pformat(out_params))
