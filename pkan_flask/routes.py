@@ -22,10 +22,9 @@ from pkan_flask.constants import INTERNAL_SERVER_ERROR, \
     INTERNAL_SERVER_ERROR_MSG, \
     REQUEST_OK, \
     EMAIL_TEMPLATE, \
-    REGEX_FACET, \
-    REGEX_QUERY, FACET_LIMIT, FACET_LIMIT_PUBLISHER, FACET_LIMIT_LICENSE, FACET_LIMIT_FORMAT, FACET_LIMIT_THEME, \
-    FACET_LIMIT_TYPE
+    REGEX_QUERY
 from pkan_flask.log import LOGGER
+from pkan_flask.solr import query_results
 
 register_config(env='Production')
 cfg = get_config()
@@ -128,19 +127,79 @@ def get_plone_url(url):
 # Download
 
 @app.route('/download')
-def return_files_tut():
+def download():
     """
     Download Files
     :return:
     """
-    params = {}
     # id empty means full export
-    params['format'] = request.args.get('format', default='rdf/xml', type=str)
+    format = request.args.get('format', default='rdf/xml', type=str)
     download_name = cfg.DOWNLOAD_FILENAME
-    if params['format'] == 'rdf/json':
+    if format == 'rdf/json':
         download_name += '.json'
         mime_type = 'application/ld+json'
-    elif params['format'] == 'rdf/ttl':
+    elif format == 'rdf/ttl':
+        download_name += '.ttl'
+        mime_type = 'text/turtle'
+    else:
+        download_name += '.rdf'
+        mime_type = 'application/rdf+xml'
+
+    file_path = Path(cfg.DOWNLOAD_DIR) / download_name
+
+    try:
+        return send_file(file_path,
+                         download_name=download_name,
+                         mimetype=mime_type)
+    except Exception as e:
+        return str(e)
+
+@app.route('/download_search')
+def download_search():
+    """
+    Download Files
+    :return:
+    """
+    # todo
+    # id empty means full export
+    format = request.args.get('format', default='rdf/xml', type=str)
+    download_name = cfg.DOWNLOAD_FILENAME
+    if format == 'rdf/json':
+        download_name += '.json'
+        mime_type = 'application/ld+json'
+    elif format == 'rdf/ttl':
+        download_name += '.ttl'
+        mime_type = 'text/turtle'
+    else:
+        download_name += '.rdf'
+        mime_type = 'application/rdf+xml'
+
+    file_path = Path(cfg.DOWNLOAD_DIR) / download_name
+
+    try:
+        return send_file(file_path,
+                         download_name=download_name,
+                         mimetype=mime_type)
+    except Exception as e:
+        return str(e)
+
+@app.route('/download_one')
+def download_one():
+    """
+    Download Files
+    :return:
+    """
+    # todo
+    # id empty means full export
+    format = request.args.get('format', default='rdf/xml', type=str)
+    id = request.args.get('id', default='', type=str)
+    if not id:
+        return
+    download_name = cfg.DOWNLOAD_FILENAME
+    if format == 'rdf/json':
+        download_name += '.json'
+        mime_type = 'application/ld+json'
+    elif format == 'rdf/ttl':
         download_name += '.ttl'
         mime_type = 'text/turtle'
     else:
@@ -179,72 +238,9 @@ def solr_search(data=None):
     LOGGER.debug('solr search')
     LOGGER.debug('request_data_json: ' + pprint.pformat(request.data))
     in_params = sj.loads(request.data)
-    LOGGER.debug('request_data:' + pprint.pformat(in_params))
 
-    out_params = {}
+    result = query_results(in_params)
 
-    if 'sort' in in_params:
-        sort = in_params['sort']
-        if sort == "score":
-            out_params['sort'] = 'score desc, inq_priority desc'
-        elif sort == "asc":
-            out_params['sort'] = 'sort asc'
-        elif sort == "desc":
-            out_params['sort'] = 'sort desc'
-        else:
-            # standard Fallback
-            out_params['sort'] = 'score desc, inq_priority desc'
-    else:
-        out_params['sort'] = 'score desc, inq_priority desc'
-
-    query_str = in_params['q']
-    query_str = REGEX_QUERY.sub('', query_str)
-    LOGGER.debug(query_str)
-    query_tokens = query_str.split(' ')
-    query_tokens_clean = []
-    for token in query_tokens:
-        query_tokens_clean.append('search:*{}*'.format(token))
-
-    for facet_name, choices in in_params['choices'].items():
-        for choice in choices:
-            choice = REGEX_FACET.sub('', choice)
-            query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
-
-    out_params['start'] = int(in_params['start'])
-    out_params['rows'] = int(in_params['rows'])
-
-    out_params['q'] = ' AND '.join(query_tokens_clean)
-
-    out_params['facet'] = 'true'
-    out_params['json.facet'] = sj.dumps({
-        'dct_publisher_facet': {
-            'terms': {'field': 'dct_publisher_facet',
-                      'limit': FACET_LIMIT_PUBLISHER},
-        },
-        'dct_license_facet': {
-            'terms': {'field': 'dct_license_facet',
-                      'limit': FACET_LIMIT_LICENSE}
-        },
-        'dct_format_facet': {
-            'terms': {'field': 'dct_format_facet',
-                      'limit': FACET_LIMIT_FORMAT}
-        },
-        'dcat_theme_facet': {
-            'terms': {'field': 'dcat_theme_facet',
-                      'limit': FACET_LIMIT_THEME}
-        },
-        'rdf_type': {
-            'terms': {'field': 'rdf_type',
-                      'limit': FACET_LIMIT_TYPE}
-        },
-    })
-    LOGGER.debug('solr_param:' + pprint.pformat(out_params))
-
-    result = requests.post(
-        cfg.SOLR_SELECT_URI,
-        data=sj.dumps({'params': out_params}),
-        headers={"Content-type": "application/json; charset=utf-8"}
-    )
     LOGGER.debug('Response {}'.format(result.content))
 
     LOGGER.debug('solr search finished')
