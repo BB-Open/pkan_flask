@@ -161,8 +161,18 @@ def download_search():
     :return:
     """
     # todo
-    # id empty means full export
     format = request.args.get('format', default='rdf/xml', type=str)
+    params = dict(request.args)
+    params['rows'] = 100
+    # todo: same names in frontend and backend
+    params['q'] = params['query']
+    params['choices'] = sj.loads(params['facets'])
+
+    res = query_results(params)
+    res = res.json()
+    uris = []
+    for element in res['response']['docs']:
+        uris.append(element['id'])
     download_name = cfg.DOWNLOAD_FILENAME
     if format == 'rdf/json':
         download_name += '.json'

@@ -41,7 +41,10 @@ def query_results(in_params):
             choice = REGEX_FACET.sub('', choice)
             query_tokens_clean.append('{}:"{}"'.format(facet_name, choice))
 
-    out_params['start'] = int(in_params['start'])
+    if 'start' in in_params:
+        out_params['start'] = int(in_params['start'])
+    else:
+        out_params['start'] = 0
     out_params['rows'] = int(in_params['rows'])
 
     out_params['q'] = ' AND '.join(query_tokens_clean)
