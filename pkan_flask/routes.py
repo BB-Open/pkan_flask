@@ -3,6 +3,7 @@
 """
 
 import functools
+import io
 import logging
 import pprint
 import sys
@@ -10,6 +11,7 @@ import traceback
 from datetime import timedelta, datetime
 from pathlib import Path
 
+import rdflib.graph
 import requests
 import simplejson as sj
 from flask import Flask, request, jsonify
@@ -18,6 +20,8 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from pkan_config.config import register_config, get_config
 
+from download.api import get_dataset_downloader, get_dataservice_downloader, get_dataset_for_service_downloader, \
+    run_downloader
 from pkan_flask.constants import INTERNAL_SERVER_ERROR, \
     INTERNAL_SERVER_ERROR_MSG, \
     REQUEST_OK, \
@@ -160,7 +164,6 @@ def download_search():
     Download Files
     :return:
     """
-    # todo
     format = request.args.get('format', default='rdf/xml', type=str)
     params = dict(request.args)
     params['rows'] = 100
@@ -173,21 +176,34 @@ def download_search():
     uris = []
     for element in res['response']['docs']:
         uris.append(element['id'])
+
     download_name = cfg.DOWNLOAD_FILENAME
     if format == 'rdf/json':
         download_name += '.json'
         mime_type = 'application/ld+json'
+        serialize_format = 'json-ld'
     elif format == 'rdf/ttl':
         download_name += '.ttl'
         mime_type = 'text/turtle'
+        serialize_format = 'ttl'
     else:
         download_name += '.rdf'
         mime_type = 'application/rdf+xml'
+        serialize_format = 'xml'
 
-    file_path = Path(cfg.DOWNLOAD_DIR) / download_name
+    g = rdflib.Graph()
+
+    run_downloader(uris, graph=g)
+
+    res = g.serialize(format=serialize_format)
+
+    response_data = io.BytesIO()
+    response_data.write(res.encode())
+    response_data.seek(0)
 
     try:
-        return send_file(file_path,
+        return send_file(response_data,
+                         as_attachment=True,
                          download_name=download_name,
                          mimetype=mime_type)
     except Exception as e:
@@ -204,22 +220,34 @@ def download_one():
     format = request.args.get('format', default='rdf/xml', type=str)
     id = request.args.get('id', default='', type=str)
     if not id:
-        return
+        return 'No Element selected.'
     download_name = cfg.DOWNLOAD_FILENAME
     if format == 'rdf/json':
         download_name += '.json'
         mime_type = 'application/ld+json'
+        serialize_format = 'json-ld'
     elif format == 'rdf/ttl':
         download_name += '.ttl'
         mime_type = 'text/turtle'
+        serialize_format = 'ttl'
     else:
         download_name += '.rdf'
         mime_type = 'application/rdf+xml'
+        serialize_format = 'xml'
 
-    file_path = Path(cfg.DOWNLOAD_DIR) / download_name
+    g = rdflib.Graph()
+
+    run_downloader([id], graph=g)
+
+    res = g.serialize(format=serialize_format)
+
+    response_data = io.BytesIO()
+    response_data.write(res.encode())
+    response_data.seek(0)
 
     try:
-        return send_file(file_path,
+        return send_file(response_data,
+                         as_attachment=True,
                          download_name=download_name,
                          mimetype=mime_type)
     except Exception as e:
