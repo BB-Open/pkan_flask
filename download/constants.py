@@ -7,7 +7,8 @@ CONSTRUCT_FIELDS_DATASET = [
     'dct:modified',
     'dct:language',
     'dcat:theme',
-    'dcatde:contributorID'
+    'dcatde:contributorID',
+    'dcat:endpointURL',
 ]
 
 CONSTRUCT_FIELDS_DATASERVICE = [
