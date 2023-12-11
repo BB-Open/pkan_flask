@@ -21,7 +21,7 @@ ADDITIONAL_CONSTRUCTS = {
     # 'dct:publisher': ['?p'],
     'dct:temporal': ['a', 'dcat:startDate', 'dcat:endDate'],
     'dcat:distribution': ['a', 'dct:license', 'dcat:accessURL', 'dcat:downloadURL', 'dct:language', 'dcat:mediaType',
-                          'dct:format', 'dct:issued', 'dct:modified']
+                          'dct:format', 'dct:issued', 'dct:modified', 'dct:title', 'dct:description',]
 }
 
 CONSTRUCT_DATASET = """
