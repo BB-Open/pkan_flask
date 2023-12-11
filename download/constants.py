@@ -12,16 +12,16 @@ CONSTRUCT_FIELDS_DATASET = [
 ]
 
 CONSTRUCT_FIELDS_DATASERVICE = [
-    'dcat:servesDataset'
-] + CONSTRUCT_FIELDS_DATASET
-
+                                   'dcat:servesDataset'
+                               ] + CONSTRUCT_FIELDS_DATASET
 
 ADDITIONAL_CONSTRUCTS = {
-    'dcat:contactPoint':  ['a', 'vcard:fn', 'vcard:hasEmail', 'vcard:email'],
+    'dcat:contactPoint': ['a', 'vcard:fn', 'vcard:hasEmail', 'vcard:email'],
     'dct:publisher': ['a', 'foaf:name', 'foaf:homepage'],
     # 'dct:publisher': ['?p'],
     'dct:temporal': ['a', 'dcat:startDate', 'dcat:endDate'],
-    'dcat:distribution': ['a', 'dct:license', 'dcat:accessURL', 'dcat:downloadURL', 'dct:language', 'dcat:mediaType', 'dct:format', 'dct:issued', 'dct:modified']
+    'dcat:distribution': ['a', 'dct:license', 'dcat:accessURL', 'dcat:downloadURL', 'dct:language', 'dcat:mediaType',
+                          'dct:format', 'dct:issued', 'dct:modified']
 }
 
 CONSTRUCT_DATASET = """
@@ -65,5 +65,3 @@ WHERE
  }}
 
 """
-
-
