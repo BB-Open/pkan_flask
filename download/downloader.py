@@ -55,11 +55,11 @@ class DatasetDownloader(BaseDownloader):
         construct_fields = ''
         where_fields = ''
         for field in CONSTRUCT_FIELDS_DATASET:
-            construct = f"?dataset_uri {field} ?dataset_{field.replace(':', '_')} ."
+            construct = f"?dataset_uri {field} ?dataset_{field.replace(':', '_').replace('?', '')} ."
             construct_fields += construct + '\n'
             where_fields += f"OPTIONAL {{ {construct} }} \n"
         for field in ADDITIONAL_CONSTRUCTS:
-            construct = f"?dataset_uri {field} ?dataset_{field.replace(':', '_')} ."
+            construct = f"?dataset_uri {field} ?dataset_{field.replace(':', '_').replace('?', '')} ."
             construct_fields += construct + '\n'
             where_fields += f"OPTIONAL {{ {construct} }} \n"
 
@@ -92,11 +92,11 @@ class DataServiceDownloader(BaseDownloader):
         construct_fields = ''
         where_fields = ''
         for field in CONSTRUCT_FIELDS_DATASERVICE:
-            construct = f"?dataservice_uri {field} ?dataservice_{field.replace(':', '_')} ."
+            construct = f"?dataservice_uri {field} ?dataservice_{field.replace(':', '_').replace('?', '')} ."
             construct_fields += construct + '\n'
             where_fields += f"OPTIONAL {{ {construct} }} \n"
         for field in ADDITIONAL_CONSTRUCTS:
-            construct = f"?dataservice_uri {field} ?dataservice_{field.replace(':', '_')} ."
+            construct = f"?dataservice_uri {field} ?dataservice_{field.replace(':', '_').replace('?', '')} ."
             construct_fields += construct + '\n'
             where_fields += f"OPTIONAL {{ {construct} }} \n"
 

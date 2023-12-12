@@ -1,27 +1,31 @@
 CONSTRUCT_FIELDS_DATASET = [
-    'dct:title',
-    'dct:description',
-    'dct:identifier',
-    'dcat:keyword',
-    'dct:issued',
-    'dct:modified',
-    'dct:language',
-    'dcat:theme',
-    'dcatde:contributorID',
-    'dcat:endpointURL',
+    # 'dct:title',
+    # 'dct:description',
+    # 'dct:identifier',
+    # 'dcat:keyword',
+    # 'dct:issued',
+    # 'dct:modified',
+    # 'dct:language',
+    # 'dcat:theme',
+    # 'dcatde:contributorID',
+    # 'dcat:endpointURL',
+    '?p',
 ]
 
 CONSTRUCT_FIELDS_DATASERVICE = [
-                                   'dcat:servesDataset'
+                                 # 'dcat:servesDataset'
                                ] + CONSTRUCT_FIELDS_DATASET
 
 ADDITIONAL_CONSTRUCTS = {
-    'dcat:contactPoint': ['a', 'vcard:fn', 'vcard:hasEmail', 'vcard:email'],
-    'dct:publisher': ['a', 'foaf:name', 'foaf:homepage'],
-    # 'dct:publisher': ['?p'],
-    'dct:temporal': ['a', 'dcat:startDate', 'dcat:endDate'],
-    'dcat:distribution': ['a', 'dct:license', 'dcat:accessURL', 'dcat:downloadURL', 'dct:language', 'dcat:mediaType',
-                          'dct:format', 'dct:issued', 'dct:modified', 'dct:title', 'dct:description',]
+    # 'dcat:contactPoint': ['a', 'vcard:fn', 'vcard:hasEmail', 'vcard:email'],
+    'dcat:contactPoint': ['?p'],
+    # 'dct:publisher': ['a', 'foaf:name', 'foaf:homepage'],
+    'dct:publisher': ['?p'],
+    # 'dct:temporal': ['a', 'dcat:startDate', 'dcat:endDate'],
+    'dct:temporal': ['?p'],
+    # 'dcat:distribution': ['a', 'dct:license', 'dcat:accessURL', 'dcat:downloadURL', 'dct:language', 'dcat:mediaType',
+    #                       'dct:format', 'dct:issued', 'dct:modified', 'dct:title', 'dct:description',]
+    'dcat:distribution': ['?p'],
 }
 
 CONSTRUCT_DATASET = """
